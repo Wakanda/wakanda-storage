@@ -18,8 +18,8 @@ struct ItemInfo
 	napi_valuetype	item_type;
 };
 
-using ItemInfoMapMapAllocator = InterprocessAllocator< std::pair<const boost::interprocess::string, ItemInfo> >;
-using ItemInfoMap = boost::interprocess::map< boost::interprocess::string, ItemInfo, std::less<boost::interprocess::string>, ItemInfoMapMapAllocator >;
+using ItemInfoMapAllocator = InterprocessAllocator< std::pair<const boost::interprocess::string, ItemInfo> >;
+using ItemInfoMap = boost::interprocess::map< boost::interprocess::string, ItemInfo, std::less<boost::interprocess::string>, ItemInfoMapAllocator >;
 using StringValue = boost::interprocess::basic_string< char, std::char_traits<char>, InterprocessAllocator<char> >;
 
 

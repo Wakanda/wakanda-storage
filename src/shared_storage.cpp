@@ -22,7 +22,7 @@ void SharedStorage::_Initialize()
 	const char kItemInfoMapKey[] = "__item_info_map__";
 	const char kStorageMutexKey[] = "__storage_mutex__";
 
-	ItemInfoMapMapAllocator allocator(segment_.get_segment_manager());
+	ItemInfoMapAllocator allocator(segment_.get_segment_manager());
 	mutex_ = segment_.find_or_construct<boost::interprocess::interprocess_recursive_mutex>(kStorageMutexKey)();
 	item_info_map_ = segment_.find_or_construct<ItemInfoMap>(kItemInfoMapKey)(std::less<boost::interprocess::string>(), allocator);
 }
