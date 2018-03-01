@@ -50,11 +50,11 @@ if (cluster.isMaster) {
 				}
 			}
 
-			storage.destroy();
+			storageMgr.destroy('masterSharedStorage');
 			process.exit();
 		}
 		catch (e) {
-			storage.destroy();
+			storageMgr.destroy('masterSharedStorage');
 			throw (e);
 		}
 	}

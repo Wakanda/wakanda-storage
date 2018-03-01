@@ -1,6 +1,7 @@
 
 
 #include "napi_helpers.h"
+#include <vector>
 
 
 bool napi_helpers::IsString(napi_env env, napi_value value)
@@ -78,14 +79,10 @@ napi_status napi_helpers::GetValueStringUTF8(napi_env env, napi_value value, std
 	napi_status status = napi_get_value_string_utf8(env, value, nullptr, 0, &buffersize);
 	if (status == napi_ok && buffersize > 0)
 	{
-		char* buffer = new char[buffersize +1];
-		if (buffer != NULL)
-		{
-			napi_status status = napi_get_value_string_utf8(env, value, (char*)buffer, buffersize +1, nullptr);
-			if (status == napi_ok)
-				string.assign(buffer, buffersize);
-			delete buffer;
-		}
+		std::vector<char> buffer(buffersize + 1);
+		napi_status status = napi_get_value_string_utf8(env, value, buffer.data(), buffersize +1, nullptr);
+		if (status == napi_ok)
+			string.assign(buffer.data(), buffersize);
 	}
 	return status;
 }

@@ -10,52 +10,58 @@
 #include <node_api.h>
 
 
+template <class T>
+using InterprocessAllocator = boost::interprocess::allocator<T, boost::interprocess::managed_shared_memory::segment_manager>;
 
-typedef struct
+struct ItemInfo
 {
 	napi_valuetype	item_type;
-} ItemInfo;
+};
 
-typedef std::pair<const boost::interprocess::string, ItemInfo> ItemInfoMapValueType;
-typedef boost::interprocess::allocator<ItemInfoMapValueType, boost::interprocess::managed_shared_memory::segment_manager>  ItemInfoMapMapAllocator;
-typedef boost::interprocess::map<boost::interprocess::string, ItemInfo, std::less<boost::interprocess::string>, ItemInfoMapMapAllocator> ItemInfoMap;
+using ItemInfoMapMapAllocator = InterprocessAllocator< std::pair<const boost::interprocess::string, ItemInfo> >;
+using ItemInfoMap = boost::interprocess::map< boost::interprocess::string, ItemInfo, std::less<boost::interprocess::string>, ItemInfoMapMapAllocator >;
+using StringValue = boost::interprocess::basic_string< char, std::char_traits<char>, InterprocessAllocator<char> >;
 
-typedef boost::interprocess::allocator<void, boost::interprocess::managed_shared_memory::segment_manager> VoidAllocator;
-typedef boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager> CharAllocator;
-typedef boost::interprocess::basic_string<char, std::char_traits<char>, CharAllocator> StringValue;
 
 
 
 class SharedStorage
 {
 public:
+	SharedStorage() = delete;
 	~SharedStorage();
 
 	static	SharedStorage*		Create(napi_env env, const char* name, int64_t size);
 	static	SharedStorage*		Open(napi_env env, const char* name);
+	static	bool				Destroy(napi_env env, const char* name);
 
 	napi_status					SetItem(napi_env env, napi_value key, napi_value value);
 	napi_status					GetItem(napi_env env, napi_value key, napi_value* value);
 	napi_status					RemoveItem(napi_env env, napi_value key);
-	void						Clear(napi_env env);
+	void						Clear();
 
-	void						Lock(napi_env env);
-	void						Unlock(napi_env env);
-	bool						TryToLock(napi_env env);
-
-	bool						Destroy(napi_env env);
+	void						Lock();
+	void						Unlock();
+	bool						TryToLock();
 
 private:
-	SharedStorage();
-	SharedStorage(const char* name, boost::interprocess::managed_shared_memory* segment, bool segmentOwner);
+	/*
+		this constructor creates a new shared memory segment
+	*/
+	SharedStorage(const char* name, int64_t size);
 
+	/*
+		this constructor opens an existing shared memory segment
+	*/	
+	SharedStorage(const char* name);
+
+	void						_Initialize();
 	bool						_DestroyItemValue(const char* key, napi_valuetype type);
 
 	std::string name_;
-	boost::interprocess::managed_shared_memory* segment_;
+	boost::interprocess::managed_shared_memory segment_;
 	boost::interprocess::interprocess_recursive_mutex* mutex_;
 	ItemInfoMap* item_info_map_;
-	bool segmentowner_;
 };
 
 
@@ -76,6 +82,7 @@ public:
 	// APIs
 	static	napi_value		Create(napi_env env, napi_callback_info info);
 	static	napi_value		Open(napi_env env, napi_callback_info info);
+	static	napi_value		Destroy(napi_env env, napi_callback_info info);
 
 	static	napi_value		SetItem(napi_env env, napi_callback_info info);
 	static	napi_value		GetItem(napi_env env, napi_callback_info info);
@@ -85,8 +92,6 @@ public:
 	static	napi_value		Lock(napi_env env, napi_callback_info info);
 	static	napi_value		Unlock(napi_env env, napi_callback_info info);
 	static	napi_value		TryToLock(napi_env env, napi_callback_info info);
-
-	static	napi_value		Destroy(napi_env env, napi_callback_info info);
 
 private:
 	static	napi_ref		constructor_;

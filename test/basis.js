@@ -96,12 +96,12 @@ try {
 	_assert('clear object item', 'undefined', typeof(storage.get('object')));
 
 	// test destroy
-	destroyed = storage.destroy();
+	destroyed = require('./wakanda_storage').destroy('basis_storage');
 	_assert('destroy storage', true, destroyed);
 }
 catch (e) {
 	if (!destroyed) {
-		storage.destroy();
+		require('./wakanda_storage').destroy('basis_storage');
 	}
 	throw (e);
 }
