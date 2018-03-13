@@ -92,10 +92,41 @@ int getLastAction(const std::string& nameFilter);
 Namespace names should be all lowercase and can include underscores (_).
 
 ### Constant Names
+Variables declared constexpr or const, and whose value is fixed for the duration of the program, should be named with a leading `k` followed by upper camel case.
+```cpp
+const int kDaysInAWeek = 7;
+```
 
 ### Enumerator Names
+Enumeration names should be nouns in upper camel case. Enumerators should be named either with a leading `e` followed by upper camel case, or like a constant, or with a prefix corresponding to the enumeration name followed by an underscore and lower camel case.
+```cpp
+enum ValueKind
+{
+    eString = 1,
+    eNumber = 2,
+    eBlob = 3
+};
+
+enum ValueKind
+{
+    kString,
+    kNumber,
+    kBlob
+};
+
+enum ValueKind
+{
+    VK_string,
+    VK_number,
+    VK_blob
+};
+```
 
 ### Macro Names
+Macro names should be named with all capitals and underscores.
+```cpp
+#define WITH_EXPERIMENTAL_OPTIMIZATION 1
+```
 
 ### Header File Template
 
