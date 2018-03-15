@@ -28,7 +28,36 @@ ProductInfo getProductInfo(const std::string& productReference);
 ```
 
 ### Braces
-Opening and closing braces should be the first characters of the line which is not space. Closing brace should be on the same column  that its opening brace.
+Opening and closing braces should be the first characters of the line which is not space. Closing brace should be on the same column that its opening brace. Also, always use braces even for a single line instruction.
+
+#### Bad
+```cpp
+ProductInfo getProductInfo(const std::string& productReference)
+{
+    std::string productName;
+    if (productReference.empty())
+        productName.assign("unknown product");
+    else
+        productName = productReference;
+    ...
+}
+```
+
+```cpp
+ProductInfo getProductInfo(const std::string& productReference) {
+    std::string productName;
+    if (productReference.empty()) {
+        productName.assign("unknown product");
+    }
+    else
+        {
+            productName = productReference;
+        }
+    ...
+}
+```
+
+#### Good
 ```cpp
 ProductInfo getProductInfo(const std::string& productReference)
 {
