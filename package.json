@@ -1,0 +1,12 @@
+{
+  "name": "wakanda_storage",
+  "version": "1.0.0",
+  "description": "Node addon for wakanda storage",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [],
+  "author": "wakanda <wakanda@yahoo.fr> (https://github.com/Wakanda/wakanda-storage)",
+  "license": "4D Open Source License"
+}
