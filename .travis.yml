@@ -1,0 +1,51 @@
+language: node_js
+node_js:
+ - "8"
+os : 
+ - linux
+ - osx
+
+env:
+  - ARCHITECTURE="$TRAVIS_OS_NAME-x86_64"
+ 
+addons:
+  apt:
+    packages:
+      - cppcheck
+      - llvm-dev
+before_install:
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update && brew upgrade node && npm install -g npm ;fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 release' ;fi
+ - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then curl -L 'http://llvm.org/apt/llvm-snapshot.gpg.key' | sudo apt-key add - ;fi
+ - echo $ARCHITECTURE
+ - echo $TRAVIS_OS_NAME
+script:
+ - npm install -g node-gyp
+ - node-gyp configure
+ - node-gyp build
+ - npm test
+# - cppcheck  -v --enable=all --language=c++ --std=c++11 . 
+# - clang-tidy -checks='*' -p . src/*.cpp
+ - cd $TRAVIS_BUILD_DIR/build/Release
+ - tar cfvz wakanda_storage_$ARCHITECTURE.tar.gz wakanda_storage.node 
+ - cd $TRAVIS_BUILD_DIR
+install:
+ - npm install -g mocha
+# - sudo apt-get install -qq cppcheck
+# - sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 release'
+# - curl -L http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+# - sudo apt-get update
+# - sudo apt-get install llvm-dev
+deploy:
+ - provider: npm
+   email: wakanda@gmail.com
+   api_key: $apikey
+ - provider: releases
+   email: wakanda@gmail.com
+   api_key: $githubKey
+   file: "$TRAVIS_BUILD_DIR/build/Release/wakanda_storage_$ARCHITECTURE.tar.gz"
+   skip_cleanup: false
+   on:
+    branch : master
+   
+        
