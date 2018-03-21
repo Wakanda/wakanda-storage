@@ -1,7 +1,7 @@
 
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-const storageMgr = require('./wakanda_storage');
+const storageMgr = require('./../build/Release/wakanda_storage.node');
 
 if (cluster.isMaster) {
 

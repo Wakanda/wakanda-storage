@@ -10,7 +10,7 @@ var _assert = function _assert(test, expected, current) {
 
 try {
 
-	storage = require('./wakanda_storage').create('basis_storage');
+	storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
 	_assert('create storage', true, storage instanceof Object);
 
 	// test values
@@ -96,12 +96,12 @@ try {
 	_assert('clear object item', 'undefined', typeof(storage.get('object')));
 
 	// test destroy
-	destroyed = require('./wakanda_storage').destroy('basis_storage');
+	destroyed = require('./../build/Release/wakanda_storage.node').destroy('basis_storage');
 	_assert('destroy storage', true, destroyed);
 }
 catch (e) {
 	if (!destroyed) {
-		require('./wakanda_storage').destroy('basis_storage');
+		require('./../build/Release/wakanda_storage.node').destroy('basis_storage');
 	}
 	throw (e);
 }
