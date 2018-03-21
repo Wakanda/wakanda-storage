@@ -10,6 +10,18 @@
 			"src",
 			"deps"
 		],
+		"cflags_cc!": ["-fno-rtti", "-fno-exceptions"],
+		"cflags_cc+": ["-frtti", "-fexceptions"],
+		"conditions": [[
+			"OS==\"mac\"", {
+				"xcode_settings": {
+					"OTHER_CPLUSPLUSFLAGS": ["-std=c++11", "-stdlib=libc++"],
+					"OTHER_LDFLAGS": ["-stdlib=libc++"],
+					"GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+					"GCC_ENABLE_CPP_RTTI": "YES"
+				}
+			}
+		]],
 		"defines": [
 			"BOOST_DATE_TIME_NO_LIB"
 		]
