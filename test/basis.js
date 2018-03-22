@@ -75,7 +75,7 @@ try {
 	_assert('tryLock storage', true, locked);
 
 	// test open
-	const storage_copy = require('./wakanda_storage').get('basis_storage');
+	const storage_copy = require('./../build/Release/wakanda_storage.node').get('basis_storage');
 	_assert('open storage', true, storage_copy instanceof Object);
 
 	_assert('number item copy', 'number', typeof(storage_copy.get('number')));
