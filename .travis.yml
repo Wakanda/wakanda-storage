@@ -22,7 +22,8 @@ before_install:
 script:
  - npm install -g node-gyp
  - npm install -g node-pre-gyp
- - node-gyp configure
+# - node-gyp configure
+ - npm install --build-from-source
  - node-gyp build
  - npm test
 # - cppcheck  -v --enable=all --language=c++ --std=c++11 . 
