@@ -6,6 +6,21 @@
   "scripts": {
     "test": "mocha"
   },
+  "dependencies": {
+    "node-pre-gyp": "0.6.x",
+    "node-gyp": "3.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build"
+  },
+  "binary": {
+    "module_name": "wakanda_storage",
+    "module_path": "./bin/",
+    "host": "https://github.com/Wakanda/wakanda-storage/releases",
+    "remote_path": "./v{version}/",
+    "package_name": "wakanda_storage_{platform}.tar.gz"
+  },
   "keywords": [],
   "author": "wakanda <wakanda@yahoo.fr> (https://github.com/Wakanda/wakanda-storage)",
   "license": "4D Open Source License"
