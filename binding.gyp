@@ -6,15 +6,6 @@
 			"src/shared_storage.cpp",
 			"src/napi_helpers.cpp"
 		],
-		{
-		 "target_name": "action_after_build",
-		 "type": "none",
-		 "dependencies": [ "<(module_name)" ],
-		 "copies": [{
-		    "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
-		    "destination": "<(module_path)"
-          }]
-       },
 		
 		"include_dirs": [
 			"src",
@@ -35,5 +26,16 @@
 		"defines": [
 			"BOOST_DATE_TIME_NO_LIB"
 		]
-	}]
+	},
+	{
+		"target_name": "action_after_build",
+		"type": "none",
+		"dependencies": [ "<(module_name)" ],
+		"copies": [{
+		   "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
+		   "destination": "<(module_path)"
+        }]
+    }
+	
+	]
 }
