@@ -42,15 +42,17 @@ install:
 # - sudo apt-get install llvm-dev
 deploy:
  - provider: npm
-   email: wakanda@gmail.com
+   email: wakanda@wakanda.org
    api_key: $apikey
    on:
     branch: master
  - provider: releases
-   email: wakanda@gmail.com
+   email: wakanda@wakanda.org
    api_key: $githubKey
    file: "$TRAVIS_BUILD_DIR/build/Release/wakanda_storage_$ARCHITECTURE.tar.gz"
    skip_cleanup: false
+   on :
+    all_branches: true
    
    
         
