@@ -12,16 +12,18 @@
   },
   "devDependencies": {},
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build"
+    "install": "node-pre-gyp install --fallback-to-build",
+	"prepublish": "npm ls"
   },
   "binary": {
     "module_name": "wakanda_storage",
     "module_path": "./bin/",
     "host": "https://github.com/Wakanda/wakanda-storage/releases",
     "remote_path": "./v{version}/",
-    "package_name": "wakanda_storage_{platform}.tar.gz"
+    "package_name": "wakanda_storage_{platform}.tar.gz",
+	"napi_versions": [8,9]
   },
   "keywords": [],
-  "author": "wakanda <wakanda@yahoo.fr> (https://github.com/Wakanda/wakanda-storage)",
+  "author": "wakanda <wakanda@wakanda.org> (https://github.com/Wakanda/wakanda-storage)",
   "license": "4D Open Source License"
 }
