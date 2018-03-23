@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "Node addon for wakanda storage",
   "main": "index.js",
-  "scripts": {
-    "test": "mocha"
-  },
   "dependencies": {
     "node-pre-gyp": "0.6.x",
     "node-gyp": "3.6.2"
@@ -13,6 +10,7 @@
   "devDependencies": {},
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
+	"test": "mocha",
 	"prepublish": "npm ls"
   },
   "binary": {
