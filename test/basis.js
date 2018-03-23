@@ -1,6 +1,9 @@
 
 var destroyed = false;
 var storage = null;
+var binary = require('node-pre-gyp');
+var path = require('path')
+var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
 
 var _assert = function _assert(test, expected, current) {
 	if (expected != current) {
@@ -10,9 +13,7 @@ var _assert = function _assert(test, expected, current) {
 
 try {
 	
-	var binary = require('node-pre-gyp');
-    var path = require('path')
-    var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
+	
     storage = require(binding_path);
 
 	//storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
