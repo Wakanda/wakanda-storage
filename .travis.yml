@@ -55,7 +55,4 @@ deploy:
    on :
     all_branches: true
     repo: wakanda/wakanda_storage
-    tags:true
-   
-   
-        
+    tags: true
