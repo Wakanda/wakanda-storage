@@ -50,7 +50,7 @@ deploy:
     tags: true
  - provider: npm
    email: wakanda@wakanda.org
-   api_key: $apikey
+   api_key: $npmkey
    on:
     branch: master
     tags: true
