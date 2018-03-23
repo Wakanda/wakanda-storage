@@ -46,7 +46,7 @@ deploy:
    api_key: $apikey
    on:
     branch: master
-    tags:true
+    tags: true
  - provider: releases
    email: wakanda@wakanda.org
    api_key: $githubKey
