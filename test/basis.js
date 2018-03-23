@@ -9,8 +9,13 @@ var _assert = function _assert(test, expected, current) {
 }
 
 try {
+	
+	var binary = require('node-pre-gyp');
+    var path = require('path')
+    var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
+    storage = require(binding_path);
 
-	storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
+	//storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
 	_assert('create storage', true, storage instanceof Object);
 
 	// test values
@@ -75,7 +80,7 @@ try {
 	_assert('tryLock storage', true, locked);
 
 	// test open
-	const storage_copy = require('./../build/Release/wakanda_storage.node').get('basis_storage');
+	const storage_copy = require(binding_path).get('basis_storage');
 	_assert('open storage', true, storage_copy instanceof Object);
 
 	_assert('number item copy', 'number', typeof(storage_copy.get('number')));
@@ -96,12 +101,12 @@ try {
 	_assert('clear object item', 'undefined', typeof(storage.get('object')));
 
 	// test destroy
-	destroyed = require('./../build/Release/wakanda_storage.node').destroy('basis_storage');
+	destroyed = require(binding_path).destroy('basis_storage');
 	_assert('destroy storage', true, destroyed);
 }
 catch (e) {
 	if (!destroyed) {
-		require('./../build/Release/wakanda_storage.node').destroy('basis_storage');
+		require(binding_path).destroy('basis_storage');
 	}
 	throw (e);
 }
