@@ -46,6 +46,7 @@ deploy:
    api_key: $apikey
    on:
     branch: master
+    tags:true
  - provider: releases
    email: wakanda@wakanda.org
    api_key: $githubKey
@@ -53,6 +54,8 @@ deploy:
    skip_cleanup: false
    on :
     all_branches: true
+    repo: wakanda/wakanda_storage
+    tags:true
    
    
         

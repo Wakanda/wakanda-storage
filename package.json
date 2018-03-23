@@ -23,6 +23,10 @@
     "package_name": "wakanda_storage_{platform}.tar.gz",
 	"napi_versions": [8,9]
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wakanda/wakanda-storage.git"
+  },
   "keywords": [],
   "author": "wakanda <wakanda@wakanda.org> (https://github.com/Wakanda/wakanda-storage)",
   "license": "4D Open Source License"
