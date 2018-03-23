@@ -14,7 +14,7 @@ var _assert = function _assert(test, expected, current) {
 try {
 	
 	
-    storage = require(binding_path);
+    storage = require(binding_path).create('basis_storage');
 
 	//storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
 	_assert('create storage', true, storage instanceof Object);
