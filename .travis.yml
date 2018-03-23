@@ -41,12 +41,6 @@ install:
 # - sudo apt-get update
 # - sudo apt-get install llvm-dev
 deploy:
- - provider: npm
-   email: wakanda@wakanda.org
-   api_key: $apikey
-   on:
-    branch: master
-    tags: true
  - provider: releases
    email: wakanda@wakanda.org
    api_key: $githubKey
@@ -55,4 +49,10 @@ deploy:
    on :
     all_branches: true
     repo: Wakanda/wakanda-storage
+    tags: true
+ - provider: npm
+   email: wakanda@wakanda.org
+   api_key: $apikey
+   on:
+    branch: master
     tags: true
