@@ -54,5 +54,5 @@ deploy:
    skip_cleanup: false
    on :
     all_branches: true
-    repo: wakanda/wakanda-storage
+    repo: Wakanda/wakanda-storage
     tags: true
