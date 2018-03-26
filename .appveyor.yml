@@ -6,9 +6,11 @@ configuration: Release
 install:
  - ps: Install-Product node $env:nodejs_version $env:platform
  - npm install -g node-gyp
+ - npm install -g node-pre-gyp
  - npm install -g mocha
 build_script:
- - node-gyp configure
+# - node-gyp configure
+ - npm install --build-from-source
  - node-gyp build
  - cd %APPVEYOR_BUILD_FOLDER%\build\Release\
  - 7z a -tgzip wakanda_storage_win64.7z wakanda_storage.node
