@@ -23,12 +23,11 @@ artifacts:
  name: wakanda_storage_win64.7z
 deploy:
  description: 'windows release version'
- provider: GitHub
- branch: master    
+ provider: GitHub    
  auth_token:
   secure: kW2dq5Hyg8WlsGniBQ7Xs9c0AM7teybE4HjQcig8Jaw4yeGvoOqkQ49wUTvmKL08
 # '%appveyorGithub%'
  artifact: build\Release\wakanda_storage_win64.7z
  on:
-  appveyor_repo_tag: false
+  appveyor_repo_tag: true
   configuration: Release
