@@ -1,5 +1,5 @@
 {
-  "name": "wakanda_storage",
+  "name": "wakanda-storage",
   "version": "0.0.1",
   "description": "Node addon for wakanda storage",
   "main": "index.js",
@@ -10,8 +10,8 @@
   "devDependencies": {},
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-	"test": "mocha",
-	"prepublish": "npm ls"
+    "test": "mocha",
+    "prepublish": "npm ls"
   },
   "binary": {
     "module_name": "wakanda_storage",
@@ -19,7 +19,10 @@
     "host": "https://github.com/Wakanda/wakanda-storage/releases",
     "remote_path": "./v{version}/",
     "package_name": "wakanda_storage_{platform}.tar.gz",
-	"napi_versions": [8,9]
+    "napi_versions": [
+      8,
+      9
+    ]
   },
   "repository": {
     "type": "git",
