@@ -20,8 +20,7 @@
     "remote_path": "./v{version}/",
     "package_name": "{module_name}_{platform}-napi-v{napi_build_version}.tar.gz",
     "napi_versions": [
-      8,
-      9
+      1
     ]
   },
   "repository": {
