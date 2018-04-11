@@ -15,10 +15,10 @@
   },
   "binary": {
     "module_name": "wakanda_storage",
-    "module_path": "./bin/",
+    "module_path": "./bin/napi-v{napi_build_version}",
     "host": "https://github.com/Wakanda/wakanda-storage/releases",
     "remote_path": "./v{version}/",
-    "package_name": "wakanda_storage_{platform}.tar.gz",
+    "package_name": "{module_name}_{platform}-napi-v{napi_build_version}.tar.gz",
     "napi_versions": [
       8,
       9
