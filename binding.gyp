@@ -24,8 +24,7 @@
 			}
 		]],
 		"defines": [
-			"BOOST_DATE_TIME_NO_LIB",
-			"NAPI_BUILD_VERSION=<(napi_build_version)",
+			"BOOST_DATE_TIME_NO_LIB"
 		]
 	},
 	{
