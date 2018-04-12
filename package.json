@@ -18,10 +18,7 @@
     "module_path": "./bin/",
     "host": "https://github.com/Wakanda/wakanda-storage/releases",
     "remote_path": "./v{version}/",
-    "package_name": "{module_name}_{platform}.tar.gz",
-    "napi_versions": [
-      1
-    ]
+    "package_name": "{module_name}_{platform}.tar.gz"
   },
   "repository": {
     "type": "git",
