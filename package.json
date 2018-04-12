@@ -16,7 +16,7 @@
   "binary": {
     "module_name": "wakanda_storage",
     "module_path": "./bin/",
-    "host": "https://github.com/Wakanda/wakanda-storage/releases",
+    "host": "https://github.com/Wakanda/wakanda-storage/releases/download/",
     "remote_path": "./v{version}/",
     "package_name": "{module_name}_{platform}.tar.gz"
   },
