@@ -13,21 +13,21 @@ build_script:
  - node-pre-gyp configure
  - node-pre-gyp build
  - cd %APPVEYOR_BUILD_FOLDER%\build\Release\
- - 7z a -tgzip wakanda_storage_win32.tar.gz wakanda_storage.node
+ - 7z a wakanda_storage_win32.zip wakanda_storage.node
  - cd %APPVEYOR_BUILD_FOLDER%
 test_script:
  - npm test
   
 artifacts:
- path: build\Release\wakanda_storage_win32.tar.gz
- name: wakanda_storage_win32.tar.gz
+ path: build\Release\wakanda_storage_win32.zip
+ name: wakanda_storage_win32.zip
 deploy:
  description: 'windows release version'
  provider: GitHub    
  auth_token:
   secure: kW2dq5Hyg8WlsGniBQ7Xs9c0AM7teybE4HjQcig8Jaw4yeGvoOqkQ49wUTvmKL08
 # '%appveyorGithub%'
- artifact: build\Release\wakanda_storage_win32.tar.gz
+ artifact: build\Release\wakanda_storage_win32.zip
  on:
   appveyor_repo_tag: true
   configuration: Release
