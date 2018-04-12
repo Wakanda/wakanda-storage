@@ -9,9 +9,9 @@ install:
  - npm install -g node-pre-gyp
  - npm install -g mocha
 build_script:
-# - node-gyp configure
  - npm install --build-from-source
- - node-gyp build
+ - node-pre-gyp configure
+ - node-pre-gyp build
  - cd %APPVEYOR_BUILD_FOLDER%\build\Release\
  - 7z a -tgzip wakanda_storage_win32.tar.gz wakanda_storage.node
  - cd %APPVEYOR_BUILD_FOLDER%
