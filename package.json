@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": { },
   "devDependencies": {
-    "node-pre-gyp": "0.9.x",
+    "node-pre-gyp": "0.6.x",
     "node-gyp": "3.6.2"
   },
   "scripts": {
