@@ -12,9 +12,11 @@ build_script:
  - npm install --build-from-source
  - node-pre-gyp configure
  - node-pre-gyp build
- - cd %APPVEYOR_BUILD_FOLDER%\build\Release\
- - 7z a -tgzip wakanda_storage_win32.tar.gz wakanda_storage.node
- - cd %APPVEYOR_BUILD_FOLDER%
+ - mkdir %APPVEYOR_BUILD_FOLDER%\bin
+ - copy %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage.node %APPVEYOR_BUILD_FOLDER%\bin
+ - 7z a -ttar %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar %APPVEYOR_BUILD_FOLDER%\bin
+ - 7z a -tgzip %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage_win32.tar.gz %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar
+ 
 test_script:
  - npm test
   
