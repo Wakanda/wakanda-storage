@@ -1,7 +1,7 @@
 {
   "name": "wakanda-storage",
   "version": "0.0.6",
-  "description": "Node addon for wakanda storage",
+  "description": "Easy to use Node storage shared between all your Node processes",
   "main": "index.js",
   "dependencies": {  },
   "devDependencies": {
@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/Wakanda/wakanda-storage.git"
   },
-  "keywords": [],
-  "author": "wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
-  "license": "4D Open Source License"
+  "keywords": ["storage", "shared storage"],
+  "author": "Wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
+  "license": "MIT",
 }
