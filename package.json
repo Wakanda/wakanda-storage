@@ -27,4 +27,5 @@
   "keywords": ["storage", "shared storage"],
   "author": "Wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
   "license": "MIT",
+  "types": "./wakanda-storage.d.ts"
 }
