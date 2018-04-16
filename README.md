@@ -1,75 +1,144 @@
-# About wakanda-storage
-Get or create a storage. This storage is shared between all your application.
-# Features
-- Easy to use from node server
-- Supports multiple target versions of Node
+`wakanda-storage` provides an easy to use Node storage, shared between all your Node processes (as for Node cluster mode).
+
+**Warning**, as `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
+
+
 # Installation
-Clone the source into your local repository then build using 
 
-``npm install --build-from-source``
-# How to Use
+```
+npm install wakanda-storage
+```
 
-To be able to use the addon require it on the top of your file as
-   
-   ``var storage = require('wakanda_storage');``
+# Usage
 
-## Manipulate storage
-Now you can create a new storage simply by calling create method
+```
+let storage = require('wakanda-storage');
+storage.create('movieStorage');
+let movies = storage.get('movieStorage');
 
-  ``storage.create('my_storage');``
-  
-You can also get an existing storage by calling getStorage method
+let movieArr = ["Batman", "Superman"];  
+movies.set('MyMovieCollection', movieArr);
+movies.get('MyMovieCollection');
+// ["Batman", "Superman"]
+```
 
-  ``storage.getStorage('my_storage');``
-## Manipulate data types
+# APIs
 
-Get and set string type
+```
+/**
+* Create a storage
+* @param storageName Defines the storage name
+* @returns The created storage
+*/
+storage.create(storageName : String);
 
-  ``storage.set('string','Hello');``
-  
-  ``storage.get('string');``
-  
-Get and set number type
 
-  ``storage.set('number',3.14);``
-  
-  ``storage.get('number');``
+/**
+* Get an existing storage
+* @param storageName The storage to returns
+* @returns The named storage if exists
+*/
+let movies = storage.get(storageName : String);
 
-Get and set boolean type
 
-  ``storage.set('bool', true);``
-  
-  ``storage.get('bool');``
+/**
+* Destroy an existing storage
+* As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
+* @param storageName The storage to destroy
+*/
+storage.destroy(storageName : String);
+```
 
-Get and set null type
+```
+/**
+* Set a storage key/value
+* @param key A storage key
+* @param value A storage value
+*/
+movies.set(key: String, value: String | Number | Boolean | Array | Object);
 
-  ``storage.set('null', null);``
-  
-  ``storage.get('null');``
-  
-  ``...``   
-## Manipulate Arrays and object  
-wakanda storage gives also the ability to work with object and arrays 
-### Arrays
-  ``var arr = [];``
-  
-  ``arr[0] = 1;``
-  
-  ``arr[2] = 2;``
-  
-  ``arr[3] = "Hello";``
-  
-  ``arr[5] = {'x':1, 'y':1};``
-  
-  ``storage.set('array',arr);``
-  
-  ``storage.get('array')``
-### Objects
+/**
+* Get a storage key/value
+* @param key Storage key
+* @return a value
+*/
+let aValue = movies.get(key : String);
 
-``var obj = { 'string': 'Hello', 'number': 6.42, 'bool': false, 'object': { 'x': 1, 'y': 2, 'z': 3 } }; ``
-``storage.set('object', obj); ``
-``storage.get('object'); ``
-  
-# License
+/**
+* Remove storage key
+* @param key A storage key
+*/
+movies.remove(key : String);
 
-4D Community License
+/**
+* Removes all storage keys/values
+*/
+movies.clear();
+
+/**
+* Lock storage.
+* No key/value can be updated until unlock
+* If already lock, then it waits until the storage is unlock.
+*/
+movies.lock();
+
+/**
+* Unlock storage
+*/
+movies.unlock()
+
+/**
+* Try to lock the storage. If already lock, then it returns an error
+*/
+movies.tryLock()
+```
+
+# Examples
+```
+// String type
+storage.set('aString','Hello');
+storage.get('aString');
+
+
+// Number type
+storage.set('aNumber', 3.14);
+storage.get('aNumber');
+
+
+// Boolean type
+storage.set('aBool', true);
+storage.get('aBool');
+
+
+// null type
+storage.set('aNull', null);
+storage.get('aNull');
+
+
+// Array type
+var arr = [];  
+arr[0] = 1;
+arr[2] = 2;
+arr[3] = "Hello";
+arr[5] = {
+  'x':1,
+  'y':1
+};
+storage.set('anArray',arr);
+storage.get('anArray')
+
+
+// Object type
+var obj = {
+  'string': 'Hello',
+  'number': 6.42,
+  'bool': false,
+  'object': {
+    'x': 1,
+    'y': 2,
+    'z': 3
+  }
+};
+storage.set('anObject', obj); 
+storage.get('anObject');
+```
