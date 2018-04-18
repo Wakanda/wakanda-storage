@@ -3,9 +3,10 @@ interface WakandaStorage {
     /**
     * Create a storage
     * @param storageName Defines the storage name
+    * @param storageSize Optionnal, Defines, the storage size in octet. Default: 1048576 octets.
     * @returns The created storage
     */
-    create(storageName: String): WakandaStorageInstance;
+    create(storageName: String, storageSize? : Number): WakandaStorageInstance;
 
     /**
     * Get an existing storage
@@ -26,6 +27,7 @@ interface WakandaStorageInstance {
 
     /**
     * Set a storage key/value
+    * `Date` and `Buffer` are not supported.
     * @param key A storage key
     * @param value A storage value
     */
@@ -62,7 +64,7 @@ interface WakandaStorageInstance {
     unlock()
 
     /**
-    * Try to lock the storage. If already lock, then it returns an error
+    * Try to lock the storage. If already lock, then it returns `false`
     */
-    tryLock()
+    tryLock(): Boolean
 }

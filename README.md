@@ -28,15 +28,16 @@ Storage.destroy('movieStorage');
 
 ## API
 
-### create(storageName : String) : Storage
+### create(storageName: String, storageSize?: Number): Storage
 
-Create a storage
+Create a storage.
+By default, the storage size is defined to 1048576 octets.
 
 ```
 let movies = Storage.create('movieStorage');
 ```
 
-### get(storageName : String) : Storage
+### get(storageName: String): Storage
 
 Get an existing storage
 
@@ -44,7 +45,7 @@ Get an existing storage
 let movies = Storage.get('movieStorage');
 ```
 
-### destroy(storageName : String)
+### destroy(storageName: String)
 
 Destroy an existing storage
 As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
@@ -55,13 +56,14 @@ Storage.destroy('movieStorage');
 
 ### storage.set(key: String, value: String | Number | Boolean | Array | Object)
 
-Set a storage key/value
+Set a storage key/value.
+`Date` and `Buffer` are not supported.
 
 ```
 movies.set('total', 30);
 ```
 
-### storage.get(key: String) : String | Number | Boolean | Array | Object
+### storage.get(key: String): String | Number | Boolean | Array | Object
 
 Get a storage key/value
 
@@ -103,9 +105,9 @@ Unlock storage
 movies.unlock();
 ```
 
-### storage.tryLock()
+### storage.tryLock(): Boolean
 
-Try to lock the storage. If already lock, then it returns an error
+Try to lock the storage. If already lock, then it returns `false`.
 
 ```
 movies.tryLock();
