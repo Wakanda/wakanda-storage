@@ -1,6 +1,6 @@
 `wakanda-storage` provides an easy to use Node storage, shared between all your Node processes (as for Node cluster mode).
 
-**Warning**, as `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
+**Be aware**, `wakanda-storage` is shared between all Node processes. The storage memory is not freed until `destroy()` is called.
 
 
 # Installation
@@ -12,14 +12,16 @@ npm install wakanda-storage
 # Usage
 
 ```
-let storage = require('wakanda-storage');
-storage.create('movieStorage');
-let movies = storage.get('movieStorage');
+let Storage = require('wakanda-storage');
+let movies = Storage.create('movieStorage');
+// let movies = Storage.get('movieStorage');
 
 let movieArr = ["Batman", "Superman"];  
 movies.set('MyMovieCollection', movieArr);
 movies.get('MyMovieCollection');
 // ["Batman", "Superman"]
+
+Storage.destroy('movieStorage');
 ```
 
 # APIs
@@ -30,7 +32,7 @@ movies.get('MyMovieCollection');
 * @param storageName Defines the storage name
 * @returns The created storage
 */
-storage.create(storageName : String);
+Storage.create(storageName : String);
 
 
 /**
@@ -38,7 +40,7 @@ storage.create(storageName : String);
 * @param storageName The storage to returns
 * @returns The named storage if exists
 */
-let movies = storage.get(storageName : String);
+let movies = Storage.get(storageName : String);
 
 
 /**
@@ -46,7 +48,7 @@ let movies = storage.get(storageName : String);
 * As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
 * @param storageName The storage to destroy
 */
-storage.destroy(storageName : String);
+Storage.destroy(storageName : String);
 ```
 
 ```
@@ -65,19 +67,19 @@ movies.set(key: String, value: String | Number | Boolean | Array | Object);
 let aValue = movies.get(key : String);
 
 /**
-* Remove storage key
+* Remove a storage key
 * @param key A storage key
 */
 movies.remove(key : String);
 
 /**
-* Removes all storage keys/values
+* Removes all keys/values from the storage 
 */
 movies.clear();
 
 /**
 * Lock storage.
-* No key/value can be updated until unlock
+* Storage cannot be update except by the thread who lock it.
 * If already lock, then it waits until the storage is unlock.
 */
 movies.lock();
@@ -95,24 +97,27 @@ movies.tryLock()
 
 # Examples
 ```
+let Storage = require('wakanda-storage');
+let movies = Storage.create('movieStorage');
+
 // String type
-storage.set('aString','Hello');
-storage.get('aString');
+movies.set('aString','Hello');
+movies.get('aString');
 
 
 // Number type
-storage.set('aNumber', 3.14);
-storage.get('aNumber');
+movies.set('aNumber', 3.14);
+movies.get('aNumber');
 
 
 // Boolean type
-storage.set('aBool', true);
-storage.get('aBool');
+movies.set('aBool', true);
+movies.get('aBool');
 
 
 // null type
-storage.set('aNull', null);
-storage.get('aNull');
+movies.set('aNull', null);
+movies.get('aNull');
 
 
 // Array type
@@ -124,8 +129,8 @@ arr[5] = {
   'x':1,
   'y':1
 };
-storage.set('anArray',arr);
-storage.get('anArray')
+movies.set('anArray',arr);
+movies.get('anArray')
 
 
 // Object type
@@ -139,6 +144,6 @@ var obj = {
     'z': 3
   }
 };
-storage.set('anObject', obj); 
-storage.get('anObject');
+movies.set('anObject', obj); 
+movies.get('anObject');
 ```
