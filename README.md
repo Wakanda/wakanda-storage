@@ -1,15 +1,17 @@
+# wakanda-storage
+
 `wakanda-storage` provides an easy to use Node storage, shared between all your Node processes (as for Node cluster mode).
 
 **Be aware**, `wakanda-storage` is shared between all Node processes. The storage memory is not freed until `destroy()` is called.
 
 
-# Installation
+## Installation
 
 ```
 npm install wakanda-storage
 ```
 
-# Usage
+## Usage
 
 ```
 let Storage = require('wakanda-storage');
@@ -24,126 +26,87 @@ movies.get('MyMovieCollection');
 Storage.destroy('movieStorage');
 ```
 
-# APIs
+## API
+
+### create(storageName : String) : Storage
+
+Create a storage
 
 ```
-/**
-* Create a storage
-* @param storageName Defines the storage name
-* @returns The created storage
-*/
-Storage.create(storageName : String);
-
-
-/**
-* Get an existing storage
-* @param storageName The storage to returns
-* @returns The named storage if exists
-*/
-let movies = Storage.get(storageName : String);
-
-
-/**
-* Destroy an existing storage
-* As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
-* @param storageName The storage to destroy
-*/
-Storage.destroy(storageName : String);
-```
-
-```
-/**
-* Set a storage key/value
-* @param key A storage key
-* @param value A storage value
-*/
-movies.set(key: String, value: String | Number | Boolean | Array | Object);
-
-/**
-* Get a storage key/value
-* @param key Storage key
-* @return a value
-*/
-let aValue = movies.get(key : String);
-
-/**
-* Remove a storage key
-* @param key A storage key
-*/
-movies.remove(key : String);
-
-/**
-* Removes all keys/values from the storage 
-*/
-movies.clear();
-
-/**
-* Lock storage.
-* Storage cannot be update except by the thread who lock it.
-* If already lock, then it waits until the storage is unlock.
-*/
-movies.lock();
-
-/**
-* Unlock storage
-*/
-movies.unlock()
-
-/**
-* Try to lock the storage. If already lock, then it returns an error
-*/
-movies.tryLock()
-```
-
-# Examples
-```
-let Storage = require('wakanda-storage');
 let movies = Storage.create('movieStorage');
+```
 
-// String type
-movies.set('aString','Hello');
-movies.get('aString');
+### get(storageName : String) : Storage
 
+Get an existing storage
 
-// Number type
-movies.set('aNumber', 3.14);
-movies.get('aNumber');
+```
+let movies = Storage.get('movieStorage');
+```
 
+### destroy(storageName : String)
 
-// Boolean type
-movies.set('aBool', true);
-movies.get('aBool');
+Destroy an existing storage
+As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
 
+```
+Storage.destroy('movieStorage');
+```
 
-// null type
-movies.set('aNull', null);
-movies.get('aNull');
+### storage.set(key: String, value: String | Number | Boolean | Array | Object)
 
+Set a storage key/value
 
-// Array type
-var arr = [];  
-arr[0] = 1;
-arr[2] = 2;
-arr[3] = "Hello";
-arr[5] = {
-  'x':1,
-  'y':1
-};
-movies.set('anArray',arr);
-movies.get('anArray')
+```
+movies.set('total', 30);
+```
 
+### storage.get(key: String) : String | Number | Boolean | Array | Object
 
-// Object type
-var obj = {
-  'string': 'Hello',
-  'number': 6.42,
-  'bool': false,
-  'object': {
-    'x': 1,
-    'y': 2,
-    'z': 3
-  }
-};
-movies.set('anObject', obj); 
-movies.get('anObject');
+Get a storage key/value
+
+```
+let totalMovies = movies.get('total');
+```
+
+### storage.remove(key: String)
+
+Remove a storage key
+
+```
+movies.remove('total');
+```
+
+### storage.clear()
+
+Removes all keys/values from the storage
+
+```
+movies.clear();
+```
+
+### storage.lock()
+
+Lock storage.
+Storage cannot be update except by the thread who lock it.
+If already lock, then it waits until the storage is unlock.
+
+```
+movies.lock();
+```
+
+### storage.unlock()
+
+Unlock storage
+
+```
+movies.unlock();
+```
+
+### storage.tryLock()
+
+Try to lock the storage. If already lock, then it returns an error
+
+```
+movies.tryLock();
 ```
