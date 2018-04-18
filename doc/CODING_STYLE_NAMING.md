@@ -65,13 +65,13 @@ public:
 ```
 
 ```cpp
-/// @brief Divide two integers and returns the result.
+/// \brief Divide two integers and returns the result.
 ///
-/// @param a dividend.
-/// @param b divisor.
-/// @param[out] c quotient.
+/// \param a dividend.
+/// \param b divisor.
+/// \param[out] c quotient.
 ///
-/// @return true if division is possible (divisor > 0), false otherwise.
+/// \return true if division is possible (divisor > 0), false otherwise.
 bool divFunction(const int a, const int b, int& c);
 ```
 ### class and structs data members
