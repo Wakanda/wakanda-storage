@@ -1,10 +1,7 @@
 
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
-const binary = require('node-pre-gyp');
-const path = require('path')
-const binding_path = binary.find(path.resolve(path.join(__dirname,'./../package.json')));
-const storageMgr = require(binding_path);
+const storageMgr = require('wakanda-storage');
 
 if (cluster.isMaster) {
 
