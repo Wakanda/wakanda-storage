@@ -1,144 +1,114 @@
+# wakanda-storage
+
 `wakanda-storage` provides an easy to use Node storage, shared between all your Node processes (as for Node cluster mode).
 
-**Warning**, as `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
+**Be aware**, `wakanda-storage` is shared between all Node processes. The storage memory is not freed until `destroy()` is called.
 
 
-# Installation
+## Installation
 
 ```
 npm install wakanda-storage
 ```
 
-# Usage
+## Usage
 
 ```
-let storage = require('wakanda-storage');
-storage.create('movieStorage');
-let movies = storage.get('movieStorage');
+let Storage = require('wakanda-storage');
+let movies = Storage.create('movieStorage');
+// let movies = Storage.get('movieStorage');
 
 let movieArr = ["Batman", "Superman"];  
 movies.set('MyMovieCollection', movieArr);
 movies.get('MyMovieCollection');
 // ["Batman", "Superman"]
+
+Storage.destroy('movieStorage');
 ```
 
-# APIs
+## API
+
+### create(storageName: String, storageSize?: Number): Storage
+
+Create a storage.
+By default, the storage size is defined to 1048576 octets.
 
 ```
-/**
-* Create a storage
-* @param storageName Defines the storage name
-* @returns The created storage
-*/
-storage.create(storageName : String);
-
-
-/**
-* Get an existing storage
-* @param storageName The storage to returns
-* @returns The named storage if exists
-*/
-let movies = storage.get(storageName : String);
-
-
-/**
-* Destroy an existing storage
-* As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
-* @param storageName The storage to destroy
-*/
-storage.destroy(storageName : String);
+let movies = Storage.create('movieStorage');
 ```
 
+### get(storageName: String): Storage
+
+Get an existing storage
+
 ```
-/**
-* Set a storage key/value
-* @param key A storage key
-* @param value A storage value
-*/
-movies.set(key: String, value: String | Number | Boolean | Array | Object);
+let movies = Storage.get('movieStorage');
+```
 
-/**
-* Get a storage key/value
-* @param key Storage key
-* @return a value
-*/
-let aValue = movies.get(key : String);
+### destroy(storageName: String)
 
-/**
-* Remove storage key
-* @param key A storage key
-*/
-movies.remove(key : String);
+Destroy an existing storage
+As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
 
-/**
-* Removes all storage keys/values
-*/
+```
+Storage.destroy('movieStorage');
+```
+
+### storage.set(key: String, value: String | Number | Boolean | Array | Object)
+
+Set a storage key/value.
+`Date` and `Buffer` are not supported.
+
+```
+movies.set('total', 30);
+```
+
+### storage.get(key: String): String | Number | Boolean | Array | Object
+
+Get a storage key/value
+
+```
+let totalMovies = movies.get('total');
+```
+
+### storage.remove(key: String)
+
+Remove a storage key
+
+```
+movies.remove('total');
+```
+
+### storage.clear()
+
+Removes all keys/values from the storage
+
+```
 movies.clear();
+```
 
-/**
-* Lock storage.
-* No key/value can be updated until unlock
-* If already lock, then it waits until the storage is unlock.
-*/
+### storage.lock()
+
+Lock storage.
+Storage cannot be update except by the thread who lock it.
+If already lock, then it waits until the storage is unlock.
+
+```
 movies.lock();
-
-/**
-* Unlock storage
-*/
-movies.unlock()
-
-/**
-* Try to lock the storage. If already lock, then it returns an error
-*/
-movies.tryLock()
 ```
 
-# Examples
+### storage.unlock()
+
+Unlock storage
+
 ```
-// String type
-storage.set('aString','Hello');
-storage.get('aString');
+movies.unlock();
+```
 
+### storage.tryLock(): Boolean
 
-// Number type
-storage.set('aNumber', 3.14);
-storage.get('aNumber');
+Try to lock the storage. If already lock, then it returns `false`.
 
-
-// Boolean type
-storage.set('aBool', true);
-storage.get('aBool');
-
-
-// null type
-storage.set('aNull', null);
-storage.get('aNull');
-
-
-// Array type
-var arr = [];  
-arr[0] = 1;
-arr[2] = 2;
-arr[3] = "Hello";
-arr[5] = {
-  'x':1,
-  'y':1
-};
-storage.set('anArray',arr);
-storage.get('anArray')
-
-
-// Object type
-var obj = {
-  'string': 'Hello',
-  'number': 6.42,
-  'bool': false,
-  'object': {
-    'x': 1,
-    'y': 2,
-    'z': 3
-  }
-};
-storage.set('anObject', obj); 
-storage.get('anObject');
+```
+movies.tryLock();
 ```
