@@ -9,9 +9,9 @@ var _assert = function _assert(test, expected, current) {
 }
 
 try {
-	
-	
-    storage = require('wakanda-storage').create('basis_storage');
+	var mod =  require('..');
+	mod.destroy('basis_storage');
+    storage = mod.create('basis_storage');
 
 	//storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
 	_assert('create storage', true, storage instanceof Object);
@@ -78,7 +78,7 @@ try {
 	_assert('tryLock storage', true, locked);
 
 	// test open
-	const storage_copy = require('wakanda-storage').get('basis_storage');
+	const storage_copy = require('../').get('basis_storage');
 	_assert('open storage', true, storage_copy instanceof Object);
 
 	_assert('number item copy', 'number', typeof(storage_copy.get('number')));
@@ -99,12 +99,12 @@ try {
 	_assert('clear object item', 'undefined', typeof(storage.get('object')));
 
 	// test destroy
-	destroyed = require('wakanda-storage').destroy('basis_storage');
+	destroyed = require('../').destroy('basis_storage');
 	_assert('destroy storage', true, destroyed);
 }
 catch (e) {
 	if (!destroyed) {
-		require('wakanda-storage').destroy('basis_storage');
+		require('../').destroy('basis_storage');
 	}
 	throw (e);
 }
