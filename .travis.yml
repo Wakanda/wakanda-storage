@@ -30,7 +30,8 @@ script:
 # - clang-tidy -checks='*' -p . src/*.cpp
  - mkdir $TRAVIS_BUILD_DIR/build/Release/bin
  - cp $TRAVIS_BUILD_DIR/build/Release/wakanda_storage.node $TRAVIS_BUILD_DIR/build/Release/bin
- - tar cfvz $TRAVIS_BUILD_DIR/build/Release/wakanda_storage_$ARCHITECTURE.tar.gz $TRAVIS_BUILD_DIR/build/Release/bin
+ - cd $TRAVIS_BUILD_DIR/build/Release
+ - tar cfvz wakanda_storage_$ARCHITECTURE.tar.gz /bin
 install:
  - npm install -g mocha
 # - sudo apt-get install -qq cppcheck
