@@ -50,7 +50,7 @@ deploy:
     tags: true
  - provider: npm
    email: social@wakanda.io
-   api_key: $npmkey
+   api_key: $npmToken
    on:
     branch: master
     tags: true
