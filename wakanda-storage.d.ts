@@ -1,29 +1,29 @@
 
-interface WakandaStorage {
+declare namespace WakandaStorage {
     /**
     * Create a storage
     * @param storageName Defines the storage name
     * @param storageSize Optionnal, Defines, the storage size in octet. Default: 1048576 octets.
     * @returns The created storage
     */
-    create(storageName: String, storageSize? : Number): WakandaStorageInstance;
+    export function create(storageName: String, storageSize? : Number): WakandaStorageInstance;
 
     /**
     * Get an existing storage
     * @param storageName The storage to returns
     * @returns The named storage if exists
     */
-    get(storageName: String): WakandaStorageInstance;
+    export function get(storageName: String): WakandaStorageInstance;
 
     /**
     * Destroy an existing storage
     * As `wakanda-storage` is shared between all Node processes, the storage memory is not freed until `destroy()` is called.
     * @param storageName The storage to destroy
     */
-    destroy(storageName: String);
+    export function destroy(storageName: String);
 }
 
-interface WakandaStorageInstance {
+declare interface WakandaStorageInstance {
 
     /**
     * Set a storage key/value
@@ -68,3 +68,5 @@ interface WakandaStorageInstance {
     */
     tryLock(): Boolean
 }
+
+export = WakandaStorage;
