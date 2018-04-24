@@ -3,15 +3,14 @@
   "version": "0.0.3",
   "description": "Easy to use Node storage shared between all your Node processes",
   "main": "./lib/index.js",
-  "dependencies": {  },
-  "devDependencies": {
-    "node-pre-gyp": "0.6.x",
+  "dependencies": { 
+    "node-pre-gyp": "0.9.1",
     "node-gyp": "3.6.2"
   },
+  "devDependencies": { },
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "test": "mocha",
-    "prepare": "npm ls"
+    "test": "mocha"
   },
   "binary": {
     "module_name": "wakanda_storage",
