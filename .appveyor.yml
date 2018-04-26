@@ -1,0 +1,35 @@
+image: Visual Studio 2017
+environment:
+ nodejs_version: "9"
+platform: x64
+configuration: Release
+install:
+ - ps: Install-Product node $env:nodejs_version $env:platform
+ - npm install -g node-gyp
+ - npm install -g node-pre-gyp
+ - npm install -g mocha
+build_script:
+ - npm install --build-from-source
+ - node-pre-gyp configure
+ - node-pre-gyp build
+# - mkdir %APPVEYOR_BUILD_FOLDER%\bin
+ - copy %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage.node %APPVEYOR_BUILD_FOLDER%\bin
+ - 7z a -ttar %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar %APPVEYOR_BUILD_FOLDER%\bin
+ - 7z a -tgzip %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage_win32.tar.gz %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar
+ 
+test_script:
+ - npm test
+  
+artifacts:
+ path: build\Release\wakanda_storage_win32.tar.gz
+ name: wakanda_storage_win32.tar.gz
+deploy:
+ description: 'windows release version'
+ provider: GitHub    
+ auth_token:
+  secure: kW2dq5Hyg8WlsGniBQ7Xs9c0AM7teybE4HjQcig8Jaw4yeGvoOqkQ49wUTvmKL08
+# '%appveyorGithub%'
+ artifact: build\Release\wakanda_storage_win32.tar.gz
+ on:
+  appveyor_repo_tag: true
+  configuration: Release

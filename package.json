@@ -1,0 +1,30 @@
+{
+  "name": "wakanda-storage",
+  "version": "0.0.7",
+  "description": "Easy to use Node storage shared between all your Node processes",
+  "main": "./lib/index.js",
+  "dependencies": { 
+    "node-pre-gyp": "0.9.1",
+    "node-gyp": "3.6.2"
+  },
+  "devDependencies": { },
+  "scripts": {
+    "install": "node-pre-gyp install --fallback-to-build",
+    "test": "mocha"
+  },
+  "binary": {
+    "module_name": "wakanda_storage",
+    "module_path": "./bin/",
+    "host": "https://github.com/Wakanda/wakanda-storage/releases/download/",
+    "remote_path": "./v{version}/",
+    "package_name": "{module_name}_{platform}.tar.gz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wakanda/wakanda-storage.git"
+  },
+  "keywords": ["storage", "shared storage"],
+  "author": "Wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
+  "license": "MIT",
+  "types": "./wakanda-storage.d.ts"
+}
