@@ -1,6 +1,6 @@
 {
   "name": "wakanda-storage",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Easy to use Node storage shared between all your Node processes",
   "main": "./lib/index.js",
   "dependencies": { 
