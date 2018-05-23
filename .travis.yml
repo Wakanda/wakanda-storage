@@ -52,6 +52,7 @@ deploy:
  - provider: npm
    email: social@wakanda.io
    api_key: $npmToken
+   skip_cleanup: true
    on:
     branch: master
     tags: true
