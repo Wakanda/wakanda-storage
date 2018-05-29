@@ -6,7 +6,7 @@ configuration: Release
 install:
  - ps: Install-Product node $env:nodejs_version $env:platform
  - npm install -g node-gyp
- - npm install -g node-pre-gyp
+ - npm install -g node-pre-gyp@0.9.1
  - npm install -g mocha
 build_script:
  - npm install --build-from-source

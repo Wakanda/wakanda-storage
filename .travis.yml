@@ -21,7 +21,7 @@ before_install:
  - echo $TRAVIS_OS_NAME
 script:
  - npm install -g node-gyp
- - npm install -g node-pre-gyp
+ - npm install -g node-pre-gyp@0.9.1
  - npm install --build-from-source
  - node-pre-gyp configure
  - node-pre-gyp build
