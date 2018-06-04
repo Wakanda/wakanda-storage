@@ -32,6 +32,7 @@ script:
  - cp $TRAVIS_BUILD_DIR/build/Release/wakanda_storage.node $TRAVIS_BUILD_DIR/build/Release/bin
  - cd $TRAVIS_BUILD_DIR/build/Release
  - tar cfvz wakanda_storage_$ARCHITECTURE.tar.gz bin
+ - cd $TRAVIS_BUILD_DIR
 install:
  - npm install -g mocha
 # - sudo apt-get install -qq cppcheck
@@ -52,7 +53,6 @@ deploy:
  - provider: npm
    email: social@wakanda.io
    api_key: $npmToken
-   skip_cleanup: true
    on:
     branch: master
     tags: true
