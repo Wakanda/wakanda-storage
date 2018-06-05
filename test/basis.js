@@ -1,110 +1,258 @@
+var assert = require('assert');
+var Storage =  require('..');
+var storage = Storage.create('basis_storage');
 
-var destroyed = false;
-var storage = null;
 
-var _assert = function _assert(test, expected, current) {
-	if (expected != current) {
-		throw (new Error('test \'' + test + '\' fails (unexpected value): current is \'' + current + '\', expected is \'' + expected + '\''));
-	}
-}
-
-try {
-	var mod =  require('..');
-	mod.destroy('basis_storage');
-    storage = mod.create('basis_storage');
-
-	//storage = require('./../build/Release/wakanda_storage.node').create('basis_storage');
-	_assert('create storage', true, storage instanceof Object);
-
-	// test values
-	storage.set('string','Hello');
-	_assert('string item', 'string', typeof(storage.get('string')));
-	_assert('string item', 'Hello', storage.get('string'));
-
-	storage.set('number',3.14);
-	_assert('number item', 'number', typeof(storage.get('number')));
-	_assert('number item', 3.14, storage.get('number'));
-
-	storage.set('bool', true);
-	_assert('bool item', 'boolean', typeof(storage.get('bool')));
-	_assert('bool item', true, storage.get('bool'));
-
-	storage.set('null', null);
-	_assert('null item', 'object', typeof(storage.get('null')));
-	_assert('null item', null, storage.get('null'));
-
-	_assert('undefined item', 'undefined', typeof(storage.get('undefined')));
-
-	var arr = [];
-	arr[0] = 1;
+var arr = [];
+    arr[0] = 1;
 	arr[2] = 2;
 	arr[3] = "Hello";
 	arr[5] = {'x':1, 'y':1};
 
-	storage.set('array',arr);
-	_assert('array item', 'object', typeof(storage.get('array')));
-	_assert('array item', true, Array.isArray(storage.get('array')));
-	_assert('array item', JSON.stringify(arr), JSON.stringify(storage.get('array')));
-
-	var obj = {
-		'string': 'Hello',
-		'number': 6.42,
-		'bool': false,
-		'object': {
-			'x': 1,
-			'y': 2,
-			'z': 3
+var obj = {
+	 'string': 'Hello',
+	 'number': 6.42,
+	 'bool': false,
+	 'object': {
+		 'x': 1,
+		 'y': 2,
+		 'z': 3
 		}
-	};
+	};		
 
-	storage.set('object', obj);
+describe('Wakanda Storage', function() {
+    
+	describe('#Create storage object ', function() {
+		it('should return true', function() {
+			assert.equal(true, storage instanceof Object);
+		});
+	});
+	
+	describe('#data types ', function() {
+		
+		describe('#String values ', function() {
+			
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('string','Hello'));
+		    });
+		   
+		    it('should return string', function() {
+			   assert.equal('string', typeof(storage.get('string')));
+		    });
+		   
+		    it('should return Hello', function() {
+			   assert.equal('Hello', storage.get('string'));
+		    });
+		   
+	    });
+	   
+	    describe('#Number values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('number',3.14));
+		    });
+		   
+		    it('should return number', function() {
+			   assert.equal('number', typeof(storage.get('number')));
+		    });
+		   
+		    it('should return 3.14', function() {
+			   assert.equal(3.14, storage.get('number'));
+		    });
+		   
+	    });
+		
+		describe('#boolean values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('bool',true));
+		    });
+		   
+		    it('should return boolean', function() {
+			   assert.equal('boolean', typeof(storage.get('bool')));
+		    });
+		   
+		    it('should return true', function() {
+			   assert.equal(true, storage.get('bool'));
+		    });
+		   
+	    });
+		
+		describe('#null values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('null',null));
+		    });
+		   
+		    it('should return object', function() {
+			   assert.equal('object', typeof(storage.get('null')));
+		    });
+		   
+		    it('should return null', function() {
+			   assert.equal(null, storage.get('null'));
+		    });
+		   
+	    });
+		
+		
+		
+		describe('#undefined values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal('undefined', typeof(storage.get('undefined')));
+		    });
+		   
+	    });
+		
+		describe('#array values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('array',arr));
+		    });
+		   
+		    it('should return object', function() {
+			   assert.equal('object', typeof(storage.get('array')));
+		    });
+		   
+		    it('should return true', function() {
+			   assert.equal(true, Array.isArray(storage.get('array')));
+		    });
+		   
+		    it('should return array', function() {
+			   assert.equal(JSON.stringify(arr), JSON.stringify(storage.get('array')));
+		    });
+		   
+	    });
+		
+		describe('#object values ', function() {
+        
+			it('should return undefined', function() {
+				assert.equal(undefined, storage.set('object',obj));
+		    });
+		   
+		    it('should return object', function() {
+			   assert.equal('object', typeof(storage.get('object')));
+		    });
+		   
+		    it('should return object', function() {
+			   assert.equal(JSON.stringify(obj), JSON.stringify(storage.get('object')));
+		    });
+		   
+	    });
+	      
+	});
+	
+	describe('#update values', function() {
+		
+		it('should return undefined', function() {
+			assert.equal(undefined, storage.set('string','Bonjour'));
+		});
+		
+		it('should return Bonjour', function() {
+			assert.equal('Bonjour', storage.get('string'));
+		});
+	});	
+	
+	describe('#remove values', function() {
+		
+		it('should return undefined', function() {
+			assert.equal(undefined, storage.remove('string'));
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined', typeof(storage.get('string')));
+		});
+	});	
+	
+	
+	describe('#Lock', function() {
+		
+		it('should return true', function() {
+			assert.equal(true, storage.tryLock());
+		});
+		
+		it('should return undefined', function() {
+			assert.equal(undefined, storage.unlock());
+		});
+		
+		it('should return true', function() {
+			assert.equal(true, storage.tryLock());
+		});
+		
+	});	
+	
+	const storage_copy = require('..').get('basis_storage');
+	
+	describe('#open', function() {
+		
+		it('should return true', function() {
+			assert.equal(true, storage_copy instanceof Object);
+		});
+		
+		it('should return number', function() {
+			assert.equal('number', typeof(storage_copy.get('number')));
+		});
+		
+		it('should return 3.14', function() {
+			assert.equal(3.14, storage_copy.get('number'));
+		});
+		
+		it('should return boolean', function() {
+			assert.equal('boolean', typeof(storage_copy.get('bool')));
+		});
+		
+		it('should return true', function() {
+			assert.equal(true, storage_copy.get('bool'));
+		});
+		
+		it('should return object', function() {
+			assert.equal('object', typeof(storage_copy.get('null')));
+		});
+		
+		it('should return null', function() {
+			assert.equal(null,storage_copy.get('null'));
+		});
+		
+	});	
+	
+	
+	describe('#clear', function() {
+		
+		it('should return undefined', function() {
+			assert.equal(undefined, storage.clear());
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined', typeof(storage.get('number')));
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined', typeof(storage.get('bool')));
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined',  typeof(storage.get('null')));
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined', typeof(storage.get('array')));
+		});
+		
+		it('should return undefined', function() {
+			assert.equal('undefined', typeof(storage.get('object')));
+		});
+		
+	});	
+	
+	describe('#destroy', function() {
+		
+		it('should return true', function() {
+			assert.equal(true, require('..').destroy('basis_storage'));
+		});
+	});
+	
+	
+	
+});
 
-	_assert('object item', 'object', typeof(storage.get('object')));
-	_assert('object item', JSON.stringify(obj), JSON.stringify(storage.get('object')));
 
-	// test update
-	storage.set('string','Bonjour');
-	_assert('update item', 'Bonjour', storage.get('string'));
-
-	// test remove
-	storage.remove('string');
-	_assert('remove item', 'undefined', typeof(storage.get('string')));
-
-	// test tryLock
-	var locked = storage.tryLock();
-	if (locked) {
-		storage.unlock();
-	}
-	_assert('tryLock storage', true, locked);
-
-	// test open
-	const storage_copy = require('../').get('basis_storage');
-	_assert('open storage', true, storage_copy instanceof Object);
-
-	_assert('number item copy', 'number', typeof(storage_copy.get('number')));
-	_assert('number item copy', 3.14, storage_copy.get('number'));
-
-	_assert('bool item copy', 'boolean', typeof(storage_copy.get('bool')));
-	_assert('bool item copy', true, storage_copy.get('bool'));
-
-	_assert('null item copy', 'object', typeof(storage_copy.get('null')));
-	_assert('null item copy', null, storage_copy.get('null'));
-
-	// test clear
-	storage.clear();
-	_assert('clear number item', 'undefined', typeof(storage.get('number')));
-	_assert('clear bool item', 'undefined', typeof(storage.get('bool')));
-	_assert('clear null item', 'undefined', typeof(storage.get('null')));
-	_assert('clear array item', 'undefined', typeof(storage.get('array')));
-	_assert('clear object item', 'undefined', typeof(storage.get('object')));
-
-	// test destroy
-	destroyed = require('../').destroy('basis_storage');
-	_assert('destroy storage', true, destroyed);
-}
-catch (e) {
-	if (!destroyed) {
-		require('../').destroy('basis_storage');
-	}
-	throw (e);
-}
