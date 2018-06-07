@@ -1,7 +1,8 @@
 var assert = require('assert');
 var Storage =  require('..');
-var storage = Storage.create('basis_storage');
 
+var storage = null;
+var storage_copy = null;
 
 var arr = [];
     arr[0] = 1;
@@ -20,8 +21,15 @@ var obj = {
 		}
 	};		
 
-describe('Wakanda Storage', function() {
+describe('Wakanda Storage basis', function() {
     
+	before(function() {
+		
+		Storage.destroy('basis_storage');
+		storage = Storage.create('basis_storage');
+		storage_copy = Storage.get('basis_storage');
+	});
+	
 	describe('#Create storage object ', function() {
 		it('should return true', function() {
 			assert.equal(true, storage instanceof Object);
@@ -181,8 +189,6 @@ describe('Wakanda Storage', function() {
 		
 	});	
 	
-	const storage_copy = require('..').get('basis_storage');
-	
 	describe('#open', function() {
 		
 		it('should return true', function() {
@@ -247,10 +253,14 @@ describe('Wakanda Storage', function() {
 	describe('#destroy', function() {
 		
 		it('should return true', function() {
-			assert.equal(true, require('..').destroy('basis_storage'));
+			assert.equal(true, Storage.destroy('basis_storage'));
 		});
 	});
 	
+	after(function() {
+		Storage.destroy('basis_storage');
+	});
+
 	
 	
 });
