@@ -14,7 +14,8 @@ if (cluster.isMaster) {
         });
 
         it("check cluster behaviour", function() {
-            var testPromise = new Promise(function(resolve, reject) {
+            this.timeout(20000);
+			var testPromise = new Promise(function(resolve, reject) {
                 var exitTimeout = null;
                 var stoppedWorkersInterval = null;
                 var stoppedWorkersCount = 0;
@@ -41,6 +42,7 @@ if (cluster.isMaster) {
 
                 stoppedWorkersInterval = setInterval(checkForStoppedWorkers, 500);
                 exitTimeout = setTimeout(resolve, 10000);
+				
             });
 
             return testPromise.then(function(){
