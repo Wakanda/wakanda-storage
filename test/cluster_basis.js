@@ -10,6 +10,7 @@ if (cluster.isMaster) {
         var storage = null;
 
         before(function() {
+			storageMgr.destroy('masterSharedStorage');
             storage = storageMgr.create('masterSharedStorage');
         });
 
@@ -22,10 +23,14 @@ if (cluster.isMaster) {
 
                 var checkForStoppedWorkers = function checkForStoppedWorkers() {
                     if (stoppedWorkersCount == numCPUs) {
-                        clearTimeout(exitTimeout);
+                        
+						clearTimeout(exitTimeout);
                         clearInterval(stoppedWorkersInterval);
                         resolve();
+						process.exit();	 
+						
                     }
+					
                 };
 
                 for (let i = 0; i < numCPUs; i++) {
@@ -36,25 +41,31 @@ if (cluster.isMaster) {
                     cluster.workers[id].on('message', function(msg) {
                         if (msg.name && msg.name == 'WORKER_WILL_STOP') {
                             ++stoppedWorkersCount;
+							
                         }
                     });
+					
                 }
 
                 stoppedWorkersInterval = setInterval(checkForStoppedWorkers, 500);
                 exitTimeout = setTimeout(resolve, 10000);
 				
+				
             });
+			
 
             return testPromise.then(function(){
                 var workersCount = storage.get('workersCount');
                 describe('count workers', function() {
 					it('#should return number ', function() {
+						 this.timeout(20000);
 						expect(workersCount).to.be.a('number');
 					});
 				});
 				
 				describe('workers count and CPU', function() {
 					it('#should be equal ', function() {
+						 this.timeout(20000);
 						expect(workersCount).to.be(numCPUs);
 					});
 				});
@@ -63,12 +74,14 @@ if (cluster.isMaster) {
                 var workersInfos = storage.get('workersInfos');
 				describe('workers info type', function() {
 					it('#should be an array ', function() {
+						 this.timeout(20000);
 						expect(workersInfos).to.be.an('array');
 					});
 				});
                 
 				describe('workers info and number of CPU', function() {
 					it('#should be equal ', function() {
+						 this.timeout(20000);
 						expect(workersInfos.length).to.be(numCPUs);         
 					});
 				});
@@ -90,19 +103,23 @@ if (cluster.isMaster) {
                     var infos = findWorkerInfos(id);
 					describe('worker info', function() {
 						it('#should not be null ', function() {
+							 this.timeout(20000);
 							expect(infos).not.to.be(null);        
 						});
 					});
                 
                     
                 }
+				
             });
-			
+				
         });        
 
         after(function() {
             storageMgr.destroy('masterSharedStorage');
-        });         
+			
+        });
+     
     });
 	
 }else {
@@ -110,8 +127,10 @@ if (cluster.isMaster) {
     var storage = storageMgr.get('masterSharedStorage');
     storage.lock();
 	describe('open existing storage', function() {
+		 this.timeout(20000);
 		it('#should be a valide object ', function() {
 			expect(storage).not.to.be(null);         
+			
 		});
 	});
 
@@ -123,8 +142,10 @@ if (cluster.isMaster) {
         ++workersCount;
     }
 	describe('count workers', function() {
+		 this.timeout(20000);
 		it('#should at least get one worker ', function() {
-			expect(workersCount).not.to.be(0);         
+			expect(workersCount).not.to.be(0);     
+			
 		});
 	});
 
@@ -143,8 +164,9 @@ if (cluster.isMaster) {
         workersInfos.push(infos);
     }
 	describe('set workers info', function() {
+		 this.timeout(20000);
 		it('#should not to be empty ', function() {
-			expect(workersInfos).to.not.be.empty();       
+			expect(workersInfos).to.not.be.empty();		
 		});
 	});
     storage.set('workersInfos', workersInfos);

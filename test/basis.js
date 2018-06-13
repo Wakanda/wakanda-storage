@@ -24,7 +24,6 @@ var obj = {
 describe('Wakanda Storage basis', function() {
     
 	before(function() {
-		
 		Storage.destroy('basis_storage');
 		storage = Storage.create('basis_storage');
 		storage_copy = Storage.get('basis_storage');
@@ -249,13 +248,6 @@ describe('Wakanda Storage basis', function() {
 		});
 		
 	});	
-	
-	describe('#destroy', function() {
-		
-		it('should return true', function() {
-			assert.equal(true, Storage.destroy('basis_storage'));
-		});
-	});
 	
 	after(function() {
 		Storage.destroy('basis_storage');
