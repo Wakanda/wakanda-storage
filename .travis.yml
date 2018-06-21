@@ -22,6 +22,7 @@ before_install:
 script:
  - npm install -g node-gyp
  - npm install -g node-pre-gyp
+ - npm install  expect.js
  - npm install --build-from-source
  - node-pre-gyp configure
  - node-pre-gyp build

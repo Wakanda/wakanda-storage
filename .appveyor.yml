@@ -8,6 +8,7 @@ install:
  - npm install -g node-gyp
  - npm install -g node-pre-gyp
  - npm install -g mocha
+ - npm install  expect.js
 build_script:
  - npm install --build-from-source
  - node-pre-gyp configure
