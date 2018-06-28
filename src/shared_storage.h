@@ -84,7 +84,7 @@ enum ItemType
 class ItemDescriptor
 {
 public:
-    ItemDescriptor() : m_type(eNone), m_bool(false), m_double(0.0) {}
+    ItemDescriptor() : m_type(eNone) {}
     virtual ~ItemDescriptor() {}
 
     ItemType m_type;
