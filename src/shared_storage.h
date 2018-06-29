@@ -32,7 +32,7 @@ namespace storage
 {
 
 // Declarations.
-struct ItemInfo;
+class ItemInfo;
 
 // Type defs.
 template <class T>
@@ -88,6 +88,7 @@ public:
     virtual ~ItemDescriptor() {}
 
     ItemType m_type;
+    std::string m_tag;
     union
     {
         bool m_bool;
@@ -100,9 +101,16 @@ public:
 /**
  *  @brief Information about stored items.
  */
-struct ItemInfo
+class ItemInfo
 {
-    ItemType m_itemType;
+public:
+    ItemInfo(ItemType type, const std::string& tag, const InterprocessAllocator<char>& allocator)
+    : m_type(type), m_tag(tag.c_str(), allocator)
+    {
+    }
+
+    ItemType m_type;
+    StringValue m_tag;
 };
 
 

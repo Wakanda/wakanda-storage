@@ -116,13 +116,14 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
     if (itemInfo != m_itemInfoMap->end())
     {
         // an item with the same key already exists
-        if (itemInfo->second.m_itemType != item.m_type)
+        if (itemInfo->second.m_type != item.m_type)
         {
             // the value type is different, then destroy the value and construct a
             // new one
-            if (destroyItemValue(key.c_str(), itemInfo->second.m_itemType))
+            if (destroyItemValue(key.c_str(), itemInfo->second.m_type))
             {
-                itemInfo->second = {item.m_type};
+                itemInfo->second.m_type = item.m_type;
+                itemInfo->second.m_tag.assign(item.m_tag.c_str());
                 constructNewValue = true;
             }
             else
@@ -164,7 +165,10 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
     else
     {
         // the item does not exist, create a new one
-        (*m_itemInfoMap)[ipStrKey] = {item.m_type};
+        ItemInfo info(item.m_type, item.m_tag,
+                      InterprocessAllocator<char>(m_segment.get_segment_manager()));
+        (*m_itemInfoMap)
+            .insert(std::pair<const boost::interprocess::string, ItemInfo>(ipStrKey, info));
         constructNewValue = true;
     }
 
@@ -210,27 +214,27 @@ Status SharedStorage::getItem(const std::string& key, ItemDescriptor& item)
     ItemInfoMap::iterator itemInfo = m_itemInfoMap->find(ipStrKey);
     if (itemInfo != m_itemInfoMap->end())
     {
-        if (itemInfo->second.m_itemType == eBool)
+        if (itemInfo->second.m_type == eBool)
         {
             item.m_type = eBool;
             item.m_bool = *m_segment.find<bool>(key.c_str()).first;
         }
-        else if (itemInfo->second.m_itemType == eDouble)
+        else if (itemInfo->second.m_type == eDouble)
         {
             item.m_type = eDouble;
             item.m_double = *m_segment.find<double>(key.c_str()).first;
         }
-        else if ((itemInfo->second.m_itemType == eString) ||
-                 (itemInfo->second.m_itemType == eObject))
+        else if ((itemInfo->second.m_type == eString) || (itemInfo->second.m_type == eObject))
         {
-            item.m_type = itemInfo->second.m_itemType;
+            item.m_type = itemInfo->second.m_type;
             StringValue* stringValue = m_segment.find<StringValue>(key.c_str()).first;
             item.m_string.reset(new std::string(stringValue->c_str()));
         }
-        else if (itemInfo->second.m_itemType == eNull)
+        else if (itemInfo->second.m_type == eNull)
         {
             item.m_type = eNull;
         }
+        item.m_tag.assign(itemInfo->second.m_tag.c_str());
     }
     else
     {
@@ -250,7 +254,7 @@ Status SharedStorage::removeItem(const std::string& key)
     ItemInfoMap::iterator itemInfo = m_itemInfoMap->find(ipStrKey);
     if (itemInfo != m_itemInfoMap->end())
     {
-        if (destroyItemValue(key.c_str(), itemInfo->second.m_itemType))
+        if (destroyItemValue(key.c_str(), itemInfo->second.m_type))
         {
             m_itemInfoMap->erase(itemInfo);
         }
@@ -274,7 +278,7 @@ void SharedStorage::clear()
 
     for (ItemInfoMap::iterator iter = m_itemInfoMap->begin(); iter != m_itemInfoMap->end(); ++iter)
     {
-        destroyItemValue(iter->first.c_str(), iter->second.m_itemType);
+        destroyItemValue(iter->first.c_str(), iter->second.m_type);
     }
     m_itemInfoMap->clear();
 }
