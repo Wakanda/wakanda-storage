@@ -254,18 +254,6 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                     break;
                 }
 
-                case napi_object:
-                {
-                    std::string value;
-                    status = napi_helpers::stringify(env, args[1], value);
-                    if (status == napi_ok)
-                    {
-                        item.m_type = storage::eObject;
-                        item.m_string.reset(new std::string(value));
-                    }
-                    break;
-                }
-
                 case napi_null:
                 {
                     item.m_type = storage::eNull;
@@ -334,10 +322,6 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
                 case storage::eString:
                     status = napi_create_string_utf8(env, item.m_string->c_str(), NAPI_AUTO_LENGTH,
                                                      &result);
-                    break;
-
-                case storage::eObject:
-                    status = napi_helpers::parse(env, *item.m_string, &result);
                     break;
 
                 case storage::eNull:

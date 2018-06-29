@@ -144,7 +144,7 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
                 double* value = m_segment.find<double>(key.c_str()).first;
                 *value = item.m_double;
             }
-            else if ((item.m_type == eString) || (item.m_type == eObject))
+            else if (item.m_type == eString)
             {
                 if (item.m_string != nullptr)
                 {
@@ -182,7 +182,7 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
         {
             m_segment.construct<double>(key.c_str())(item.m_double);
         }
-        else if ((item.m_type == eString) || (item.m_type == eObject))
+        else if (item.m_type == eString)
         {
             if (item.m_string != nullptr)
             {
@@ -224,7 +224,7 @@ Status SharedStorage::getItem(const std::string& key, ItemDescriptor& item)
             item.m_type = eDouble;
             item.m_double = *m_segment.find<double>(key.c_str()).first;
         }
-        else if ((itemInfo->second.m_type == eString) || (itemInfo->second.m_type == eObject))
+        else if (itemInfo->second.m_type == eString)
         {
             item.m_type = itemInfo->second.m_type;
             StringValue* stringValue = m_segment.find<StringValue>(key.c_str()).first;
@@ -318,13 +318,13 @@ bool SharedStorage::destroyItemValue(const char* key, ItemType type)
     {
         return m_segment.destroy<double>(key);
     }
-    else if ((type == eString) || (type == eObject))
+    else if (type == eString)
     {
         return m_segment.destroy<StringValue>(key);
     }
     else if (type == eNull)
     {
-        // nothing to do
+		return true;
     }
     return false;
 }
