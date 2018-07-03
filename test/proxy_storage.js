@@ -20,26 +20,26 @@ describe('proxy storage', function() {
 		});
 	});
 	
-	describe('#Date as object ', function() {
+	describe('#set and get Date Object ', function() {
 			
 		it('should return undefined', function() {
 			assert.equal(undefined, proxyStorage.set('dateObject',dateObject));
 	    });
 		   
-		it('should return string', function() {
-			console.log(proxyStorage.get('dateObject'));
-		    assert.equal(true, proxyStorage.get('dateObject') instanceof Object);
+		it('should return true', function() {
+			
+		    assert.equal(true, proxyStorage.get('dateObject') instanceof Date);
 		});
 		   
 	});
 	
-	describe('#Date as buffer', function() {
+	describe('#set and get buffer Object', function() {
 			
 		it('should return undefined', function() {
 			assert.equal(undefined, proxyStorage.set('bufferObject',buf));
 	    });
 		   
-		it('should return Buffer', function() {
+		it('should return true', function() {
 		    assert.equal(true, proxyStorage.get('bufferObject') instanceof Buffer);
 		});
 		   
