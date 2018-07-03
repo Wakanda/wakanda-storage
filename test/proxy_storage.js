@@ -4,7 +4,7 @@ var assert = require('assert');
 var proxyStorage = null;
 
 var dateObject = new Date('July 1, 2018');
-const buf = Buffer.from('July 1, 2018', 'utf8');
+const buf = Buffer.from('This is a buffer', 'utf8');
 			
 describe('proxy storage', function() {
 
@@ -36,13 +36,11 @@ describe('proxy storage', function() {
 	describe('#Date as buffer', function() {
 			
 		it('should return undefined', function() {
-			assert.equal(undefined, proxyStorage.set('bufDate',
-			));
+			assert.equal(undefined, proxyStorage.set('bufferObject',buf));
 	    });
 		   
-		it('should return string', function() {
-			console.log(proxyStorage.get('bufDate'));
-		    assert.equal(true, proxyStorage.get('bufDate') instanceof Object);
+		it('should return Buffer', function() {
+		    assert.equal(true, proxyStorage.get('bufferObject') instanceof Buffer);
 		});
 		   
 	});
