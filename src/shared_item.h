@@ -261,7 +261,7 @@ public:
      * @param segment Memory segment from which read the value.
      * @param key Key of the item.
      */
-    void read(boost::interprocess::managed_shared_memory& segment, const std::string& key)
+    void read(boost::interprocess::managed_shared_memory& segment, const std::string& key) override
     {
         m_value = *segment.find<T>(key.c_str()).first;
     }
@@ -332,7 +332,7 @@ void SharedItemValue<std::string>::construct(boost::interprocess::managed_shared
 
 template <>
 bool SharedItemValue<std::string>::destroy(boost::interprocess::managed_shared_memory& segment,
-                                           const std::string& key) const override
+                                           const std::string& key) const
 {
     return segment.destroy<StringValue>(key.c_str());
 }

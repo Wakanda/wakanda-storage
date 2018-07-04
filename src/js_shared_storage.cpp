@@ -304,70 +304,70 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
             {
                 stStatus = storage->getItem(key, item);
             }
-			if (stStatus == storage::eOk)
-			{
-				switch (item->getType())
-				{
-				case storage::eBool:
-					status = napi_get_boolean(env, item->getBool(), &result);
-					break;
+            if (stStatus == storage::eOk)
+            {
+                switch (item->getType())
+                {
+                case storage::eBool:
+                    status = napi_get_boolean(env, item->getBool(), &result);
+                    break;
 
-				case storage::eDouble:
-					status = napi_create_double(env, item->getDouble(), &result);
-					break;
+                case storage::eDouble:
+                    status = napi_create_double(env, item->getDouble(), &result);
+                    break;
 
-				case storage::eString:
-				{
-					std::string localString;
-					item->getString(localString);
-					status = napi_create_string_utf8(env, localString.c_str(), NAPI_AUTO_LENGTH,
-						&result);
-					break;
-				}
+                case storage::eString:
+                {
+                    std::string localString;
+                    item->getString(localString);
+                    status = napi_create_string_utf8(env, localString.c_str(), NAPI_AUTO_LENGTH,
+                                                     &result);
+                    break;
+                }
 
-				case storage::eNull:
-					status = napi_get_null(env, &result);
-					break;
+                case storage::eNull:
+                    status = napi_get_null(env, &result);
+                    break;
 
-				default:
-					status = napi_get_undefined(env, &result);
-					break;
-				}
-				if ((status == napi_ok) && (argsCount >= 2) && napi_helpers::isBool(env, args[1]))
-				{
-					bool withTag = false;
-					status = napi_get_value_bool(env, args[1], &withTag);
-					if ((status == napi_ok) && withTag)
-					{
-						/**
-						 * if withTag is true, result is an object:
-						 * {
-						 *	 "value": itemValue,
-						 *	 "tag": itemBag
-						 * }
-						 */
-						napi_value object = nullptr;
-						napi_value tag = nullptr;
-						status = napi_create_object(env, &object);
-						if (status == napi_ok)
-						{
-							status = napi_helpers::createValueStringUTF8(item->getTag(), env, &tag);
-						}
-						if (status == napi_ok)
-						{
-							status = napi_set_named_property(env, object, "value", result);
-						}
-						if (status == napi_ok)
-						{
-							status = napi_set_named_property(env, object, "tag", tag);
-						}
-						if (status == napi_ok)
-						{
-							result = object;
-						}
-					}
-				}
-			}
+                default:
+                    status = napi_get_undefined(env, &result);
+                    break;
+                }
+                if ((status == napi_ok) && (argsCount >= 2) && napi_helpers::isBool(env, args[1]))
+                {
+                    bool withTag = false;
+                    status = napi_get_value_bool(env, args[1], &withTag);
+                    if ((status == napi_ok) && withTag)
+                    {
+                        /**
+                         * if withTag is true, result is an object:
+                         * {
+                         *	 "value": itemValue,
+                         *	 "tag": itemBag
+                         * }
+                         */
+                        napi_value object = nullptr;
+                        napi_value tag = nullptr;
+                        status = napi_create_object(env, &object);
+                        if (status == napi_ok)
+                        {
+                            status = napi_helpers::createValueStringUTF8(item->getTag(), env, &tag);
+                        }
+                        if (status == napi_ok)
+                        {
+                            status = napi_set_named_property(env, object, "value", result);
+                        }
+                        if (status == napi_ok)
+                        {
+                            status = napi_set_named_property(env, object, "tag", tag);
+                        }
+                        if (status == napi_ok)
+                        {
+                            result = object;
+                        }
+                    }
+                }
+            }
         }
     }
     return result;
