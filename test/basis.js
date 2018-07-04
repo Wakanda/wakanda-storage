@@ -21,6 +21,9 @@ var obj = {
 		}
 	};		
 
+var dateObject = new Date('July 1, 2018');
+const buf = Buffer.from('This is a buffer', 'utf8');	
+	
 describe('Wakanda Storage basis', function() {
     
 	before(function() {
@@ -247,14 +250,40 @@ describe('Wakanda Storage basis', function() {
 			assert.equal('undefined', typeof(storage.get('object')));
 		});
 		
-	});	
+	});
+		
+    describe('#proxy storage', function() {
+
+	    describe('#set and get Date Object ', function() {
+			
+		    it('should return undefined', function() {
+			  assert.equal(undefined, storage.set('dateObject',dateObject));
+	        });
+		   
+		    it('should return true', function() {
+		       assert.equal(true, storage.get('dateObject') instanceof Date);
+		    }); 
+			
+	    });
+	
+	    describe('#set and get buffer Object', function() {
+			
+		    it('should return undefined', function() {
+			  assert.equal(undefined, storage.set('bufferObject',buf));
+	        });
+		   
+		    it('should return true', function() {
+		      assert.equal(true, storage.get('bufferObject') instanceof Buffer);
+		    });
+		   
+	    });
+	
+    });
 	
 	after(function() {
 		Storage.destroy('basis_storage');
 	});
 
-	
-	
 });
 
 
