@@ -23,6 +23,7 @@
 
 
 // Includes.
+#include "shared_item.h"
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
@@ -46,11 +47,8 @@ using ItemInfoMap =
     boost::interprocess::map<boost::interprocess::string, ItemInfo,
                              std::less<boost::interprocess::string>, ItemInfoMapAllocator>;
 
-using StringValue =
-    boost::interprocess::basic_string<char, std::char_traits<char>, InterprocessAllocator<char>>;
-
 /**
- *  @brief Status / error codes.
+ *  @brief  Status / Error codes.
  */
 enum Status
 {
@@ -65,54 +63,57 @@ enum Status
 };
 
 /**
- *  @brief Item types.
- */
-enum ItemType
-{
-    eNone = 0,
-    eBool = 1,
-    eDouble = 2,
-    eString = 3,
-    eObject = 4,
-    eNull = 5
-};
-
-
-/**
- *  @brief Item descriptor.
- */
-class ItemDescriptor
-{
-public:
-    ItemDescriptor() : m_type(eNone), m_string(nullptr) {}
-    virtual ~ItemDescriptor() {}
-
-    ItemType m_type;
-    std::string m_tag;
-    union
-    {
-        bool m_bool;
-        double m_double;
-        std::unique_ptr<std::string> m_string;
-    };
-};
-
-
-/**
- *  @brief Information about stored items.
+ *  @brief  Information about shared items. For each item, the storage maintains its type and its
+ * tag.
  */
 class ItemInfo
 {
 public:
+    // Type defs.
+    using StringValue = boost::interprocess::basic_string<char, std::char_traits<char>,
+                                                          InterprocessAllocator<char>>;
+
+    /**
+     * @brief  Deleted constructor.
+     */
+    ItemInfo() = delete;
+
+    /**
+     * @brief  Constructor.
+     *
+     * @param type Type of the shared item.
+     * @param tag Tag associated to the shared item.
+     */
     ItemInfo(ItemType type, const std::string& tag, const InterprocessAllocator<char>& allocator)
     : m_type(type), m_tag(tag.c_str(), allocator)
     {
     }
 
+    /**
+     * @brief  Get the type of the shared item.
+     *
+     * @return Type of the shared item.
+     */
+    ItemType getType() const { return m_type; }
+
+    /**
+     * @brief  Set the tag associated to the shared item.
+     *
+     * @param tag Tag associated to the shared item.
+     */
+    void setTag(const std::string& tag) { m_tag.assign(tag.c_str()); }
+
+    /**
+     * @brief  Get the tag associated to the shared item.
+     *
+     * @param[out] tag Tag associated to the shared item.
+     */
+    void getTag(std::string& tag) const { tag.assign(m_tag.c_str()); }
+
+private:
     ItemType m_type;
     StringValue m_tag;
 };
-
 
 /**
  * @brief  native shared storage implementation
@@ -168,7 +169,7 @@ public:
      *
      * @return eOk if inserting the item succeeded.
      */
-    Status setItem(const std::string& key, const ItemDescriptor& item);
+    Status setItem(const std::string& key, const SharedItem& item);
 
     /**
      * @brief  Get an item already stored in the shared storage.
@@ -178,7 +179,7 @@ public:
      *
      * @return eOk if the item was found.
      */
-    Status getItem(const std::string& key, ItemDescriptor& item);
+    Status getItem(const std::string& key, std::unique_ptr<SharedItem>& item);
 
     /**
      * @brief  Remove an item from the shared storage. Can throw error.
@@ -231,16 +232,6 @@ private:
      *  @brief  Initialize the shared storage.
      */
     void initialize();
-
-    /**
-     * @brief  Destroy only the value of a given stored item.
-     *
-     * @param key Key of the desired item.
-     * @param type Type of the item's value to destroy.
-     *
-     * @return true if value destruction succeeded.
-     */
-    bool destroyItemValue(const char* key, const ItemType type);
 
     std::string m_name;
     boost::interprocess::managed_shared_memory m_segment;

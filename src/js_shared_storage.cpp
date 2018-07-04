@@ -205,11 +205,15 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
         status = napi_unwrap(env, thisInstance, (void**)&storage);
         if (status == napi_ok)
         {
-            storage::ItemDescriptor item;
-            std::string key;
+            std::unique_ptr<storage::SharedItem> item;
+            std::string key, tag;
             napi_valuetype type = napi_undefined;
 
             status = napi_helpers::getValueStringUTF8(env, args[0], key);
+            if ((argsCount >= 3) && napi_helpers::isString(env, args[2]))
+            {
+                status = napi_helpers::getValueStringUTF8(env, args[2], tag);
+            }
             if (status == napi_ok)
             {
                 status = napi_typeof(env, args[1], &type);
@@ -224,8 +228,7 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                     status = napi_get_value_bool(env, args[1], &value);
                     if (status == napi_ok)
                     {
-                        item.m_type = storage::eBool;
-                        item.m_bool = value;
+                        item.reset(new storage::SharedItemBool(value, tag));
                     }
                     break;
                 }
@@ -236,8 +239,7 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                     status = napi_get_value_double(env, args[1], &value);
                     if (status == napi_ok)
                     {
-                        item.m_type = storage::eDouble;
-                        item.m_double = value;
+                        item.reset(new storage::SharedItemDouble(value, tag));
                     }
                     break;
                 }
@@ -248,15 +250,14 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                     status = napi_helpers::getValueStringUTF8(env, args[1], value);
                     if (status == napi_ok)
                     {
-                        item.m_type = storage::eString;
-                        item.m_string.reset(new std::string(value));
+                        item.reset(new storage::SharedItemString(value, tag));
                     }
                     break;
                 }
 
                 case napi_null:
                 {
-                    item.m_type = storage::eNull;
+                    item.reset(new storage::SharedItemNull(tag));
                     break;
                 }
 
@@ -265,15 +266,11 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                 }
             }
 
-            if ((status == napi_ok) && (item.m_type != storage::eNone))
+            if ((status == napi_ok) && (item != nullptr))
             {
                 try
                 {
-                    if ((argsCount >= 3) && napi_helpers::isString(env, args[2]))
-                    {
-                        napi_helpers::getValueStringUTF8(env, args[2], item.m_tag);
-                    }
-                    storage->setItem(key, item);
+                    storage->setItem(key, *item);
                 }
                 catch (const std::exception& e)
                 {
@@ -299,7 +296,7 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
         status = napi_unwrap(env, thisInstance, (void**)&storage);
         if (status == napi_ok)
         {
-            storage::ItemDescriptor item;
+            std::unique_ptr<storage::SharedItem> item;
             storage::Status stStatus = storage::eOk;
             std::string key;
             status = napi_helpers::getValueStringUTF8(env, args[0], key);
@@ -309,20 +306,24 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
             }
             if (stStatus == storage::eOk)
             {
-                switch (item.m_type)
+                switch (item->getType())
                 {
                 case storage::eBool:
-                    status = napi_get_boolean(env, item.m_bool, &result);
+                    status = napi_get_boolean(env, item->getBool(), &result);
                     break;
 
                 case storage::eDouble:
-                    status = napi_create_double(env, item.m_double, &result);
+                    status = napi_create_double(env, item->getDouble(), &result);
                     break;
 
                 case storage::eString:
-                    status = napi_create_string_utf8(env, item.m_string->c_str(), NAPI_AUTO_LENGTH,
+                {
+                    std::string localString;
+                    item->getString(localString);
+                    status = napi_create_string_utf8(env, localString.c_str(), NAPI_AUTO_LENGTH,
                                                      &result);
                     break;
+                }
 
                 case storage::eNull:
                     status = napi_get_null(env, &result);
@@ -342,8 +343,8 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
                     /**
                      * if withTag is true, result is an object:
                      * {
-                     *	"value": item_value,
-                     *	"tag": item_tag
+                     *	 "value": itemValue,
+                     *	 "tag": itemBag
                      * }
                      */
                     napi_value object = nullptr;
@@ -351,7 +352,7 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
                     status = napi_create_object(env, &object);
                     if (status == napi_ok)
                     {
-                        status = napi_helpers::createValueStringUTF8(item.m_tag, env, &tag);
+                        status = napi_helpers::createValueStringUTF8(item->getTag(), env, &tag);
                     }
                     if (status == napi_ok)
                     {

@@ -104,7 +104,7 @@ Status SharedStorage::destroy(const char* name)
     return destroyed ? eOk : eCannotDestroyStorage;
 }
 
-Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item)
+Status SharedStorage::setItem(const std::string& key, const SharedItem& item)
 {
     Status status = eOk;
     bool constructNewValue = false;
@@ -112,18 +112,19 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
         *m_mutex);
 
-    ItemInfoMap::iterator itemInfo = m_itemInfoMap->find(ipStrKey);
-    if (itemInfo != m_itemInfoMap->end())
+    ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
+    if (info != m_itemInfoMap->end())
     {
         // an item with the same key already exists
-        if (itemInfo->second.m_type != item.m_type)
+        if (info->second.getType() != item.getType())
         {
             // the value type is different, then destroy the value and construct a
             // new one
-            if (destroyItemValue(key.c_str(), itemInfo->second.m_type))
+            std::unique_ptr<SharedItem> itemToRemove;
+            createSharedItem(info->second.getType(), std::string(), itemToRemove);
+            if ((itemToRemove != nullptr) && itemToRemove->destroy(m_segment, key))
             {
-                itemInfo->second.m_type = item.m_type;
-                itemInfo->second.m_tag.assign(item.m_tag.c_str());
+                (*m_itemInfoMap).erase(info);
                 constructNewValue = true;
             }
             else
@@ -133,77 +134,32 @@ Status SharedStorage::setItem(const std::string& key, const ItemDescriptor& item
         }
         else
         {
-            // the value type is the same, just update the value
-            if (item.m_type == eBool)
-            {
-                bool* value = m_segment.find<bool>(key.c_str()).first;
-                *value = item.m_bool;
-            }
-            else if (item.m_type == eDouble)
-            {
-                double* value = m_segment.find<double>(key.c_str()).first;
-                *value = item.m_double;
-            }
-            else if (item.m_type == eString)
-            {
-                if (item.m_string != nullptr)
-                {
-                    StringValue* value = m_segment.find<StringValue>(key.c_str()).first;
-                    value->assign(item.m_string->c_str());
-                }
-            }
-            else if (item.m_type == eNull)
-            {
-                // nothing to do
-            }
-            else
-            {
-                status = eUnknownItemType;
-            }
+            // the value type is the same, just update the value and the tag
+            item.write(m_segment, key);
+
+            info->second.setTag(item.getTag());
         }
     }
     else
     {
         // the item does not exist, create a new one
-        ItemInfo info(item.m_type, item.m_tag,
-                      InterprocessAllocator<char>(m_segment.get_segment_manager()));
-        (*m_itemInfoMap)
-            .insert(std::pair<const boost::interprocess::string, ItemInfo>(ipStrKey, info));
         constructNewValue = true;
     }
 
     if (constructNewValue)
     {
-        if (item.m_type == eBool)
-        {
-            m_segment.construct<bool>(key.c_str())(item.m_bool);
-        }
-        else if (item.m_type == eDouble)
-        {
-            m_segment.construct<double>(key.c_str())(item.m_double);
-        }
-        else if (item.m_type == eString)
-        {
-            if (item.m_string != nullptr)
-            {
-                m_segment.construct<StringValue>(key.c_str())(item.m_string->c_str(),
-                                                              m_segment.get_segment_manager());
-            }
-        }
-        else if (item.m_type == eNull)
-        {
-            // nothing to do
-        }
-        else
-        {
-            status = eUnknownItemType;
-        }
+        item.construct(m_segment, key);
+
+        ItemInfo info(item.getType(), item.getTag(),
+                      InterprocessAllocator<char>(m_segment.get_segment_manager()));
+        (*m_itemInfoMap)
+            .insert(std::pair<const boost::interprocess::string, ItemInfo>(ipStrKey, info));
     }
 
     return status;
 }
 
-Status SharedStorage::getItem(const std::string& key, ItemDescriptor& item)
+Status SharedStorage::getItem(const std::string& key, std::unique_ptr<SharedItem>& item)
 {
     Status status = eOk;
     std::string strKey;
@@ -211,30 +167,20 @@ Status SharedStorage::getItem(const std::string& key, ItemDescriptor& item)
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
         *m_mutex);
 
-    ItemInfoMap::iterator itemInfo = m_itemInfoMap->find(ipStrKey);
-    if (itemInfo != m_itemInfoMap->end())
+    ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
+    if (info != m_itemInfoMap->end())
     {
-        if (itemInfo->second.m_type == eBool)
+        std::string tag;
+        info->second.getTag(tag);
+        createSharedItem(info->second.getType(), tag, item);
+        if (item != nullptr)
         {
-            item.m_type = eBool;
-            item.m_bool = *m_segment.find<bool>(key.c_str()).first;
+            item->read(m_segment, key);
         }
-        else if (itemInfo->second.m_type == eDouble)
+        else
         {
-            item.m_type = eDouble;
-            item.m_double = *m_segment.find<double>(key.c_str()).first;
+            status = eUnknownItemType;
         }
-        else if (itemInfo->second.m_type == eString)
-        {
-            item.m_type = itemInfo->second.m_type;
-            StringValue* stringValue = m_segment.find<StringValue>(key.c_str()).first;
-            item.m_string.reset(new std::string(stringValue->c_str()));
-        }
-        else if (itemInfo->second.m_type == eNull)
-        {
-            item.m_type = eNull;
-        }
-        item.m_tag.assign(itemInfo->second.m_tag.c_str());
     }
     else
     {
@@ -251,16 +197,25 @@ Status SharedStorage::removeItem(const std::string& key)
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
         *m_mutex);
 
-    ItemInfoMap::iterator itemInfo = m_itemInfoMap->find(ipStrKey);
-    if (itemInfo != m_itemInfoMap->end())
+    ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
+    if (info != m_itemInfoMap->end())
     {
-        if (destroyItemValue(key.c_str(), itemInfo->second.m_type))
+        std::unique_ptr<SharedItem> item;
+        createSharedItem(info->second.getType(), std::string(), item);
+        if (item != nullptr)
         {
-            m_itemInfoMap->erase(itemInfo);
+            if (item->destroy(m_segment, key))
+            {
+                m_itemInfoMap->erase(info);
+            }
+            else
+            {
+                status = eCannotRemoveItem;
+            }
         }
         else
         {
-            status = eCannotRemoveItem;
+            status = eUnknownItemType;
         }
     }
     else
@@ -278,7 +233,12 @@ void SharedStorage::clear()
 
     for (ItemInfoMap::iterator iter = m_itemInfoMap->begin(); iter != m_itemInfoMap->end(); ++iter)
     {
-        destroyItemValue(iter->first.c_str(), iter->second.m_type);
+        std::unique_ptr<SharedItem> item;
+        createSharedItem(iter->second.getType(), std::string(), item);
+        if (item != nullptr)
+        {
+            item->destroy(m_segment, std::string(iter->first.c_str()));
+        }
     }
     m_itemInfoMap->clear();
 }
@@ -304,27 +264,6 @@ bool SharedStorage::tryToLock()
     if (m_mutex != nullptr)
     {
         return m_mutex->try_lock();
-    }
-    return false;
-}
-
-bool SharedStorage::destroyItemValue(const char* key, ItemType type)
-{
-    if (type == eBool)
-    {
-        return m_segment.destroy<bool>(key);
-    }
-    else if (type == eDouble)
-    {
-        return m_segment.destroy<double>(key);
-    }
-    else if (type == eString)
-    {
-        return m_segment.destroy<StringValue>(key);
-    }
-    else if (type == eNull)
-    {
-		return true;
     }
     return false;
 }
