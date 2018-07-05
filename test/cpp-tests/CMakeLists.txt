@@ -26,9 +26,17 @@ use_cxx14()
 
 project (cpp-tests)
 
-add_executable(cpp-tests main.cpp)
+add_executable(cpp-tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
+  basis.cpp
+  main.cpp
+)
 
 target_include_directories(cpp-tests PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/catch2"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/catch2"
 )
+
+target_compile_definitions(cpp-tests PUBLIC BOOST_DATE_TIME_NO_LIB)

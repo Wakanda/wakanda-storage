@@ -1,35 +1,32 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+/*
+ * This file is part of Wakanda software, licensed by 4D under
+ *  ( i ) the GNU General Public License version 3 ( GNU GPL v3 ), or
+ *  ( ii ) the Affero General Public License version 3 ( AGPL v3 ) or
+ *  ( iii ) a commercial license.
+ * This file remains the exclusive property of 4D and/or its licensors
+ * and is protected by national and international legislations.
+ * In any event, Licensee's compliance with the terms and conditions
+ * of the applicable license constitutes a prerequisite to any use of this file.
+ * Except as otherwise expressly stated in the applicable license,
+ * such license does not include any other license or rights on this file,
+ * 4D's and/or its licensors' trademarks and/or other proprietary rights.
+ * Consequently, no title, copyright or other proprietary rights
+ * other than those specified in the applicable license is granted.
+ */
+
+/**
+ * \file    main.cpp
+ */
+
+#define CATCH_CONFIG_RUNNER
+
+// Local includes.
 #include "catch.hpp"
-#include <vector>
-#include <algorithm>
 
-unsigned int Factorial(unsigned int number) {
-    return number > 1 ? Factorial(number - 1)*number : 1;
-}
+int main(int argc, char* argv[])
+{
 
-void can_use_cxx14 (std::vector<int>& v) {
-    
-    std::transform(v.begin(), v.end(), v.begin(), [](auto x) { return x * x; } );
-	
-}
+    int result = Catch::Session().run(argc, argv);
 
-TEST_CASE("Factorials are computed", "[factorial]") {
-    REQUIRE(Factorial(0) == 1);
-    REQUIRE(Factorial(1) == 1);
-    REQUIRE(Factorial(2) == 2);
-    REQUIRE(Factorial(3) == 6);
-    REQUIRE(Factorial(10) == 3628800);
-}
-
-TEST_CASE("Can we use cxx14", "[can_use_cxx14]") {
-	
-	std::vector <int> vect  = {0, 1, 2, 3, 4, 5};
-	can_use_cxx14(vect);
-    
-	REQUIRE(vect[0] == 0);
-	REQUIRE(vect[1] == 1);
-	REQUIRE(vect[2] == 4);
-	REQUIRE(vect[3] == 9);
-	REQUIRE(vect[4] == 16);
-	REQUIRE(vect[5] == 25);
+    return result;
 }
