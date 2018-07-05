@@ -274,80 +274,84 @@ protected:
  * @brief  Bool value specializations.
  */
 template <>
-SharedItemValue<bool>::SharedItemValue(const std::string& tag)
+inline SharedItemValue<bool>::SharedItemValue(const std::string& tag)
 : SharedItem(eBool, tag), m_value(false)
 {
 }
 
 template <>
-SharedItemValue<bool>::SharedItemValue(const bool& value, const std::string& tag)
+inline SharedItemValue<bool>::SharedItemValue(const bool& value, const std::string& tag)
 : SharedItem(eBool, tag), m_value(value)
 {
 }
 
-template <> bool SharedItemValue<bool>::getBool() const { return m_value; }
+template <> inline bool SharedItemValue<bool>::getBool() const { return m_value; }
 
 /**
  * @brief  Double values specializations.
  */
 template <>
-SharedItemValue<double>::SharedItemValue(const std::string& tag)
+inline SharedItemValue<double>::SharedItemValue(const std::string& tag)
 : SharedItem(eDouble, tag), m_value(0.0)
 {
 }
 
 template <>
-SharedItemValue<double>::SharedItemValue(const double& value, const std::string& tag)
+inline SharedItemValue<double>::SharedItemValue(const double& value, const std::string& tag)
 : SharedItem(eDouble, tag), m_value(value)
 {
 }
 
-template <> double SharedItemValue<double>::getDouble() const { return m_value; }
+template <> inline double SharedItemValue<double>::getDouble() const { return m_value; }
 
 /**
  * @brief  String values specializations.
  */
 template <>
-SharedItemValue<std::string>::SharedItemValue(const std::string& tag) : SharedItem(eString, tag)
+inline SharedItemValue<std::string>::SharedItemValue(const std::string& tag)
+: SharedItem(eString, tag)
 {
 }
 
 template <>
-SharedItemValue<std::string>::SharedItemValue(const std::string& value, const std::string& tag)
+inline SharedItemValue<std::string>::SharedItemValue(const std::string& value,
+                                                     const std::string& tag)
 : SharedItem(eString, tag), m_value(value)
 {
 }
 
-template <> void SharedItemValue<std::string>::getString(std::string& value) const
+template <> inline void SharedItemValue<std::string>::getString(std::string& value) const
 {
     value.assign(m_value.c_str());
 }
 
 template <>
-void SharedItemValue<std::string>::construct(boost::interprocess::managed_shared_memory& segment,
-                                             const std::string& key) const
+inline void
+SharedItemValue<std::string>::construct(boost::interprocess::managed_shared_memory& segment,
+                                        const std::string& key) const
 {
     segment.construct<StringValue>(key.c_str())(m_value.c_str(), segment.get_segment_manager());
 }
 
 template <>
-bool SharedItemValue<std::string>::destroy(boost::interprocess::managed_shared_memory& segment,
-                                           const std::string& key) const
+inline bool
+SharedItemValue<std::string>::destroy(boost::interprocess::managed_shared_memory& segment,
+                                      const std::string& key) const
 {
     return segment.destroy<StringValue>(key.c_str());
 }
 
 template <>
-void SharedItemValue<std::string>::write(boost::interprocess::managed_shared_memory& segment,
-                                         const std::string& key) const
+inline void SharedItemValue<std::string>::write(boost::interprocess::managed_shared_memory& segment,
+                                                const std::string& key) const
 {
     StringValue* localValue = segment.find<StringValue>(key.c_str()).first;
     localValue->assign(m_value.c_str());
 }
 
 template <>
-void SharedItemValue<std::string>::read(boost::interprocess::managed_shared_memory& segment,
-                                        const std::string& key)
+inline void SharedItemValue<std::string>::read(boost::interprocess::managed_shared_memory& segment,
+                                               const std::string& key)
 {
     StringValue* localValue = segment.find<StringValue>(key.c_str()).first;
     m_value.assign(localValue->c_str());
