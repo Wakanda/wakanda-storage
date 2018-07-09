@@ -40,3 +40,19 @@ target_include_directories(cpp-tests PUBLIC
 )
 
 target_compile_definitions(cpp-tests PUBLIC BOOST_DATE_TIME_NO_LIB)
+
+if (UNIX AND NOT APPLE)
+  find_library(LIB_RT rt)
+  if (LIB_RT)
+    target_link_libraries(cpp-tests ${LIB_RT})
+  else()
+    message(SEND_ERROR "lib rt is missing")
+  endif()
+
+  find_library(LIB_PT pthread)
+  if (LIB_PT)
+    target_link_libraries(cpp-tests ${LIB_PT})
+  else()
+    message(SEND_ERROR "lib pthread is missing")
+  endif()
+endif()
