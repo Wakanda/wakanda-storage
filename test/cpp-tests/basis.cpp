@@ -116,6 +116,37 @@ TEST_CASE("Bool item can be created, read, updated and removed")
             CHECK(item->getBool() == newValue);
         }
     }
+	
+	SECTION("Override a bool item with string value")
+    {
+        std::string newStringValue("this is not a boolean value");
+        std::string str_tmp;
+        storage::Status status = setter.get()->setItem(key, storage::SharedItemString(newStringValue, tag));
+        std::unique_ptr<storage::SharedItem> item;
+        status = setter.get()->getItem(key, item);
+        CHECK(status == storage::eOk);
+        CHECK(item != nullptr);
+        if (item != nullptr)
+        {
+            item->getString(str_tmp);
+            CHECK(!str_tmp.empty() == true);
+            CHECK(str_tmp == newStringValue);
+        }
+    }
+
+    SECTION("Override a bool item with a double value")
+    {
+        double double_value(3.14);
+        storage::Status status = setter.get()->setItem(key, storage::SharedItemDouble(double_value, tag));
+        std::unique_ptr<storage::SharedItem> item;
+        status = setter.get()->getItem(key, item);
+        CHECK(status == storage::eOk);
+        CHECK(item != nullptr);
+        if (item != nullptr)
+        {
+            CHECK(item->getDouble() == 3.14);
+        }
+    }
 
     SECTION("Removing a bool item")
     {
