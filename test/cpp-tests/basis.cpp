@@ -202,6 +202,24 @@ TEST_CASE("Double item can be created, read, updated and removed")
         }
     }
 
+    SECTION("Override a double with a string value")
+    {
+        std::string str_value ("this is not a double value");
+        std::string tmp_str;
+        storage::Status status =
+            setter.get()->setItem(key, storage::SharedItemString(str_value, tag));
+        std::unique_ptr<storage::SharedItem> item;
+        status = setter.get()->getItem(key, item);
+        CHECK(status == storage::eOk);
+        CHECK(item != nullptr);
+        if (item != nullptr)
+        {
+            CHECK(item->getType() == storage::eString);
+            item->getString(tmp_str);
+            CHECK(tmp_str == str_value);
+        }
+    }
+
     SECTION("Removing a double item")
     {
         status = setter.get()->removeItem(key);
@@ -280,6 +298,22 @@ TEST_CASE("String item can be created, read, updated and removed")
             std::string stringValue;
             item->getString(stringValue);
             CHECK(stringValue == newValue);
+        }
+    }
+
+    SECTION("Override a string with a double value")
+    {
+        double double_value = 3.14;
+        storage::Status status =
+            setter.get()->setItem(key, storage::SharedItemDouble(3.14, tag));
+        std::unique_ptr<storage::SharedItem> item;
+        status = setter.get()->getItem(key, item);
+        CHECK(status == storage::eOk);
+        CHECK(item != nullptr);
+        if (item != nullptr)
+        {
+            CHECK(item->getType() == storage::eDouble);
+            CHECK(item->getDouble() == double_value);
         }
     }
 
