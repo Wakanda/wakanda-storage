@@ -13,11 +13,11 @@ env:
 addons:
   apt:
     sources:
-      - llvm-toolchain-precise-3.8
+      - llvm-toolchain-precise
     packages:
       - cppcheck
       - llvm-dev
-      - clang-3.8
+      - clang
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ARCHITECTURE="darwin" ;fi
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 release' ;fi
