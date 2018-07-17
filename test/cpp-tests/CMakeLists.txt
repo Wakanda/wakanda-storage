@@ -41,10 +41,28 @@ target_include_directories(cpp-tests PUBLIC
 
 target_compile_definitions(cpp-tests PUBLIC BOOST_DATE_TIME_NO_LIB)
 
+# create target for the child process (multi-process tests)
+add_executable(child-process
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
+  common_process.h
+  child_process.cpp
+)
+
+target_include_directories(child-process PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps"
+)
+
+target_compile_definitions(child-process PUBLIC BOOST_DATE_TIME_NO_LIB)
+
 if (UNIX AND NOT APPLE)
   find_library(LIB_RT rt)
   if (LIB_RT)
     target_link_libraries(cpp-tests ${LIB_RT})
+    target_link_libraries(child-process ${LIB_RT})
   else()
     message(SEND_ERROR "lib rt is missing")
   endif()
@@ -52,6 +70,7 @@ if (UNIX AND NOT APPLE)
   find_library(LIB_PT pthread)
   if (LIB_PT)
     target_link_libraries(cpp-tests ${LIB_PT})
+    target_link_libraries(child-process ${LIB_PT})
   else()
     message(SEND_ERROR "lib pthread is missing")
   endif()
