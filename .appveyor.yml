@@ -20,6 +20,7 @@ build_script:
  - cd %APPVEYOR_BUILD_FOLDER%\test\cpp-tests
  - cmake  -DCMAKE_CONFIGURATION_TYPES="Release" -G "Visual Studio 15 2017 Win64"
  - msbuild cpp-tests.vcxproj /property:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+ - msbuild child-process.vcxproj /property:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
  
 test_script:
  - npm test
