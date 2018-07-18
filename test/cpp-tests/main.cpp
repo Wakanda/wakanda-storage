@@ -22,9 +22,13 @@
 
 // Local includes.
 #include "catch.hpp"
+#include "common_process.h"
+
+std::string gExecutablePath;
 
 int main(int argc, char* argv[])
 {
+    gExecutablePath.assign(argv[0]);
 
     int result = Catch::Session().run(argc, argv);
 

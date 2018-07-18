@@ -26,9 +26,33 @@ use_cxx14()
 
 project (cpp-tests)
 
+#create target for lib boost system
+file(GLOB_RECURSE boost_system_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/libs/boost/system/src/*.*")
+
+add_library(boost-system STATIC ${boost_system_src})
+
+target_include_directories(boost-system PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps")
+
+#create target for lib boost filesystem
+file(GLOB_RECURSE boost_filesystem_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/libs/boost/filesystem/src/*.*")
+
+add_library(boost-filesystem STATIC ${boost_filesystem_src})
+
+target_include_directories(boost-filesystem PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps")
+
+target_compile_definitions(boost-filesystem PUBLIC BOOST_FILESYSTEM_NO_LIB)
+target_compile_definitions(boost-filesystem PUBLIC BOOST_SYSTEM_NO_LIB)
+
 add_executable(cpp-tests
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
+  common_process.h
   basis.cpp
   main.cpp
 )
@@ -40,6 +64,7 @@ target_include_directories(cpp-tests PUBLIC
 )
 
 target_compile_definitions(cpp-tests PUBLIC BOOST_DATE_TIME_NO_LIB)
+target_link_libraries(cpp-tests boost-filesystem boost-system)
 
 # create target for the child process (multi-process tests)
 add_executable(child-process

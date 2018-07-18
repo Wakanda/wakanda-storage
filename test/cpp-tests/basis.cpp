@@ -21,7 +21,12 @@
 // Local includes.
 #include "catch.hpp"
 #include "shared_storage.h"
+#include "common_process.h"
 #include <string>
+#include <future>
+#include <chrono>
+#include <boost/filesystem.hpp>
+#include <boost/process/child.hpp>
 
 const int64_t kSize = 1024 * 1024;
 
@@ -360,5 +365,73 @@ TEST_CASE("Null item can be created, read, and removed")
         status = setter.get()->getItem(key, item);
         CHECK(status == storage::eItemNotFound);
         CHECK(item == nullptr);
+    }
+}
+
+
+TEST_CASE("Items can be created, read, in multi-processus environment")
+{
+    SECTION("Performing concurrent read and write accesses from several processes")
+    {
+        StorageSetter setter(kStorageName.c_str());
+
+        REQUIRE(setter.get() != nullptr);
+
+        unsigned int childsCount = std::thread::hardware_concurrency() * 2;
+        boost::filesystem::path childPath(gExecutablePath);
+        childPath = childPath.parent_path();
+#if _WINDOWS
+        childPath /= boost::filesystem::path("child-process.exe");
+#else
+        childPath /= boost::filesystem::path("child-process");
+#endif
+
+        auto launchChildren = [childsCount, childPath]() {
+            std::vector<std::unique_ptr<boost::process::child>> children;
+
+            for (unsigned int iter = 0; iter < childsCount; ++iter)
+            {
+                boost::process::child* child = new boost::process::child(childPath);
+                children.push_back(std::unique_ptr<boost::process::child>(child));
+            }
+
+            for (auto iter = children.begin(); iter != children.end(); ++iter)
+            {
+                (*iter)->wait();
+            }
+        };
+
+        auto childrenFuture = std::async(std::launch::async, launchChildren);
+
+        childrenFuture.wait_for(std::chrono::milliseconds(10000));
+
+        std::unique_ptr<storage::SharedItem> item;
+        storage::Status status = setter.get()->getItem(kChildCountKey, item);
+        CHECK(status == storage::eOk);
+
+        if (status == storage::eOk)
+        {
+            CHECK(item->getType() == storage::eDouble);
+            CHECK(item->getDouble() == childsCount);
+        }
+
+        status = setter.get()->getItem(kChildNameKey, item);
+        CHECK(status == storage::eOk);
+
+        if (status == storage::eOk)
+        {
+            CHECK(item->getType() == storage::eString);
+
+            std::string names;
+            item->getString(names);
+            for (unsigned int iter = 1; iter <= childsCount; ++iter)
+            {
+                std::string name(kChildName);
+                char buffer[16];
+                std::sprintf(buffer, "%i", iter);
+                name.append(buffer);
+                CHECK(names.find(name) != std::string::npos);
+            }
+        }
     }
 }
