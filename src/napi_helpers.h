@@ -99,6 +99,16 @@ bool isNull(napi_env env, napi_value value);
 bool isUndefined(napi_env env, napi_value value);
 
 /**
+ * @brief  boolean type checking.
+ *
+ * @param env Nodejs environment handler.
+ * @param value Value for which the type is checked.
+ *
+ * @return true if the value is boolean.
+ */
+bool isBool(napi_env env, napi_value value);
+
+/**
  * @brief read a string from a value.
  *
  * @param env Nodejs environment handler.

@@ -1,4 +1,6 @@
 language: node_js
+compiler:
+  - clang
 node_js:
  - node
 os : 
@@ -10,9 +12,12 @@ env:
  
 addons:
   apt:
+    sources:
+      - llvm-toolchain-precise
     packages:
       - cppcheck
       - llvm-dev
+      - clang
 before_install:
  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ARCHITECTURE="darwin" ;fi
  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 release' ;fi
@@ -27,6 +32,11 @@ script:
  - node-pre-gyp configure
  - node-pre-gyp build
  - npm test
+ - cd $TRAVIS_BUILD_DIR/test/cpp-tests
+ - cmake -DCMAKE_BUILD_TYPE=Release
+ - make cpp-tests
+ - make child-process
+ - ./cpp-tests
 # - cppcheck  -v --enable=all --language=c++ --std=c++11 . 
 # - clang-tidy -checks='*' -p . src/*.cpp
  - mkdir $TRAVIS_BUILD_DIR/build/Release/bin
@@ -36,6 +46,7 @@ script:
  - cd $TRAVIS_BUILD_DIR
 install:
  - npm install -g mocha
+ - export cc=clang && export CXX=clang++
 # - sudo apt-get install -qq cppcheck
 # - sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-6.0 release'
 # - curl -L http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -

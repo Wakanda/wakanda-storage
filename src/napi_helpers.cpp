@@ -86,6 +86,15 @@ bool napi_helpers::isUndefined(napi_env env, napi_value value)
     return false;
 }
 
+bool napi_helpers::isBool(napi_env env, napi_value value)
+{
+    napi_valuetype type = napi_undefined;
+    napi_status status = napi_typeof(env, value, &type);
+    if (status == napi_ok)
+        return (type == napi_boolean);
+    return false;
+}
+
 napi_status napi_helpers::getValueStringUTF8(napi_env env, napi_value value, std::string& string)
 {
     string.clear();

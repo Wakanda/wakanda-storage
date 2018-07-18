@@ -4,6 +4,8 @@
 		"sources": [
 			"src/addon_entry_point.cpp",
 			"src/shared_storage.cpp",
+			"src/shared_item.cpp",
+			"src/js_shared_storage.cpp",
 			"src/napi_helpers.cpp"
 		],
 		

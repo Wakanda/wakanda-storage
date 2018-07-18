@@ -54,16 +54,15 @@ As `wakanda-storage` is shared between all Node processes, the storage memory is
 Storage.destroy('movieStorage');
 ```
 
-### storage.set(key: String, value: String | Number | Boolean | Array | Object)
+### storage.set(key: String, value: String | Number | Boolean | Array | Object | Date | Buffer )
 
 Set a storage key/value.
-`Date` and `Buffer` are not supported.
 
 ```
 movies.set('total', 30);
 ```
 
-### storage.get(key: String): String | Number | Boolean | Array | Object
+### storage.get(key: String): String | Number | Boolean | Array | Object | Date | Buffer
 
 Get a storage key/value
 

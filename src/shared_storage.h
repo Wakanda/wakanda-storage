@@ -23,14 +23,17 @@
 
 
 // Includes.
+#include "shared_item.h"
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/sync/interprocess_recursive_mutex.hpp>
-#include <node_api.h>
+
+namespace storage
+{
 
 // Declarations.
-struct ItemInfo;
+class ItemInfo;
 
 // Type defs.
 template <class T>
@@ -44,21 +47,76 @@ using ItemInfoMap =
     boost::interprocess::map<boost::interprocess::string, ItemInfo,
                              std::less<boost::interprocess::string>, ItemInfoMapAllocator>;
 
-using StringValue =
-    boost::interprocess::basic_string<char, std::char_traits<char>, InterprocessAllocator<char>>;
-
 /**
- *  @brief Information about stored items.
+ *  @brief  Status / Error codes.
  */
-struct ItemInfo
+enum Status
 {
-    napi_valuetype m_itemType;
+    eOk = 0,
+    eCannotCreateStorage = 1,
+    eCannotOpenStorage = 2,
+    eCannotDestroyStorage = 3,
+    eUnknownItemType = 4,
+    eItemNotFound = 5,
+    eCannotRemoveItem = 6,
+    eCannotReplaceItem = 7
 };
 
+/**
+ *  @brief  Information about shared items. For each item, the storage maintains its type and its
+ * tag.
+ */
+class ItemInfo
+{
+public:
+    // Type defs.
+    using StringValue = boost::interprocess::basic_string<char, std::char_traits<char>,
+                                                          InterprocessAllocator<char>>;
 
+    /**
+     * @brief  Deleted constructor.
+     */
+    ItemInfo() = delete;
+
+    /**
+     * @brief  Constructor.
+     *
+     * @param type Type of the shared item.
+     * @param tag Tag associated to the shared item.
+     */
+    ItemInfo(ItemType type, const std::string& tag, const InterprocessAllocator<char>& allocator)
+    : m_type(type), m_tag(tag.c_str(), allocator)
+    {
+    }
+
+    /**
+     * @brief  Get the type of the shared item.
+     *
+     * @return Type of the shared item.
+     */
+    ItemType getType() const { return m_type; }
+
+    /**
+     * @brief  Set the tag associated to the shared item.
+     *
+     * @param tag Tag associated to the shared item.
+     */
+    void setTag(const std::string& tag) { m_tag.assign(tag.c_str()); }
+
+    /**
+     * @brief  Get the tag associated to the shared item.
+     *
+     * @param[out] tag Tag associated to the shared item.
+     */
+    void getTag(std::string& tag) const { tag.assign(m_tag.c_str()); }
+
+private:
+    ItemType m_type;
+    StringValue m_tag;
+};
 
 /**
- * @brief  nativeshared storage implementation
+ * @brief  native shared storage implementation
  */
 class SharedStorage
 {
@@ -76,65 +134,61 @@ public:
     /**
      * @brief  Create a shared storage.
      *
-     * @param env Nodejs environment handler.
      * @param name Name of the new shared storage.
      * @param size Size in bytes of the new shared storage.
+     * @param[out] status Status is eOk if creation succeeded.
      *
      * @return Pointer to a new shared storage.
      */
-    static SharedStorage* create(napi_env env, const char* name, const int64_t size);
+    static SharedStorage* create(const char* name, const int64_t size, Status& status);
 
     /**
      * @brief  Only open a shared storage.
      *
-     * @param env Nodejs environment handler.
      * @param name Name of the shared storage to open.
+     * @param[out] status Status is eOk if opening succeeded.
      *
      * @return Pointer to the opened shared storage.
      */
-    static SharedStorage* open(napi_env env, const char* name);
+    static SharedStorage* open(const char* name, Status& status);
 
     /**
      * @brief  Destroy a shared storage.
      *
-     * @param env Nodejs environment handler.
      * @param name Name of the shared storage to destroy.
      *
-     * @return true if destruction succeeded.
+     * @return eOk if destruction succeeded.
      */
-    static bool destroy(napi_env env, const char* name);
+    static Status destroy(const char* name);
 
     /**
      * @brief  Insert a new item into the shared storage. Can throw error.
      *
-     * @param env Nodejs environment handler.
      * @param key Key to identify the new item.
-     * @param value Value of the new item.
+     * @param item Descriptor of the new item.
      *
-     * @return napi_ok if resolving the key and the value succeeded.
+     * @return eOk if inserting the item succeeded.
      */
-    napi_status setItem(napi_env env, napi_value key, napi_value value);
+    Status setItem(const std::string& key, const SharedItem& item);
 
     /**
      * @brief  Get an item already stored in the shared storage.
      *
-     * @param env Nodejs environment handler.
      * @param key Key of the desired item.
-     * @param[out] value Value of the item.
+     * @param[out] item Descriptor of the item.
      *
-     * @return napi_ok if resolving the key and populating the value succeeded.
+     * @return eOk if the item was found.
      */
-    napi_status getItem(napi_env env, napi_value key, napi_value* value);
+    Status getItem(const std::string& key, std::unique_ptr<SharedItem>& item);
 
     /**
      * @brief  Remove an item from the shared storage. Can throw error.
      *
-     * @param env Nodejs environment handler.
      * @param key Key of the desired item.
      *
-     * @return napi_ok if resolving the key succeeded.
+     * @return eOk if removing the item succeeded.
      */
-    napi_status removeItem(napi_env env, napi_value key);
+    Status removeItem(const std::string& key);
 
     /**
      * @brief  Clear the shared storage. Can throw error.
@@ -179,192 +233,12 @@ private:
      */
     void initialize();
 
-    /**
-     * @brief  Destroy only the value of a given stored item.
-     *
-     * @param key Key of the desired item.
-     * @param type Type of the item's value to destroy.
-     *
-     * @return true if value destruction succeeded.
-     */
-    bool destroyItemValue(const char* key, const napi_valuetype type);
-
     std::string m_name;
     boost::interprocess::managed_shared_memory m_segment;
     boost::interprocess::interprocess_recursive_mutex* m_mutex;
     ItemInfoMap* m_itemInfoMap;
 };
 
-
-
-/**
- * @brief  shared storage implementation for JavaScript
- */
-class JsSharedStorage
-{
-public:
-    /**
-     * @brief  Define the SharedStorage class at JavaScript level.
-     *
-     * @param env Nodejs environment handler.
-     *
-     * @return napi_ok if defining the SharedStorage class succeeded.
-     */
-    static napi_status define(napi_env env);
-
-    /**
-     * @brief  Undefine the SharedStorage class at JavaScript level.
-     *
-     * @param env Nodejs environment handler.
-     *
-     * @return napi_ok undefining the SharedStorage class succeeded.
-     */
-    static napi_status undefine(napi_env env);
-
-    /**
-     * @brief  Constructor callback.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Constructor parameters.
-     *
-     * @return this object.
-     */
-    static napi_value constructor(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Create JavaScript instance and wrap native SharedStorage.
-     *
-     * @param env Nodejs environment handler.
-     * @param storage Native SharedStorage pointer.
-     * @param[out] result JavaScript instance.
-     *
-     * @return napi_ok if creating the instance and wrapping the native
-     * SharedStorage succeeded.
-     */
-    static napi_status createInstance(napi_env env, SharedStorage* storage, napi_value* result);
-
-    /**
-     * @brief  Finalize callback for garbage collection.
-     *
-     * @param env Nodejs environment handler.
-     * @param data Native SharedStorage pointer.
-     * @param hint Contextual hint.
-     */
-    static void finalize(napi_env env, void* data, void* hint);
-
-    /**
-     * @brief  Retrieve native SharedStorage from JavaScript instance.
-     *
-     * @param env Nodejs environment handler
-     * @param info Callback parameters.
-     * @param[out] result Native SharedStorage pointer.
-     *
-     * @return napi_ok if retrieving the native SharedStorage succeeded.
-     */
-    static napi_status getStorage(napi_env env, napi_callback_info info, SharedStorage** result);
-
-    /**
-     * @brief  Create a new storage.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return SharedStorage JavaScript instance.
-     */
-    static napi_value create(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Open an existing storage.
-     *
-     * @param env  Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return SharedStorage JavaScript instance.
-     */
-    static napi_value open(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Destroy an existing storage.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return boolean value, true if destroying the storage succeeded.
-     */
-    static napi_value destroy(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Set an item.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return nullptr.
-     */
-    static napi_value setItem(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Get an item.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return item value or nullptr if the item was not found.
-     */
-    static napi_value getItem(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Remove an item.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return nullptr.
-     */
-    static napi_value removeItem(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Remove all the items.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return nullptr.
-     */
-    static napi_value clear(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Lock the storage for writing and reading items.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return nullptr.
-     */
-    static napi_value lock(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Unlock the storage for writing and reading items.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return nullptr.
-     */
-    static napi_value unlock(napi_env env, napi_callback_info info);
-
-    /**
-     * @brief  Try to lock the storage for writing and reading items.
-     *
-     * @param env Nodejs environment handler.
-     * @param info Callback parameters.
-     *
-     * @return boolean value, true if locking the storage succeeded.
-     */
-    static napi_value tryToLock(napi_env env, napi_callback_info info);
-
-private:
-    static napi_ref m_constructor;
-};
+} // namespace storage
 
 #endif /* SHARED_STORAGE_H_ */
