@@ -35,6 +35,7 @@ script:
  - cd $TRAVIS_BUILD_DIR/test/cpp-tests
  - cmake -DCMAKE_BUILD_TYPE=Release
  - make cpp-tests
+ - make child-process
  - ./cpp-tests
 # - cppcheck  -v --enable=all --language=c++ --std=c++11 . 
 # - clang-tidy -checks='*' -p . src/*.cpp
