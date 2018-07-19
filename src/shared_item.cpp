@@ -39,9 +39,6 @@ void createSharedItem(const ItemType type, const std::string& tag,
     case eString:
         item.reset(new SharedItemString(tag));
         break;
-    case eNull:
-        item.reset(new SharedItemNull(tag));
-        break;
     default:
         break;
     }

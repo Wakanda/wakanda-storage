@@ -255,12 +255,6 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
                     break;
                 }
 
-                case napi_null:
-                {
-                    item.reset(new storage::SharedItemNull(tag));
-                    break;
-                }
-
                 default:
                     break;
                 }
@@ -324,10 +318,6 @@ napi_value JsSharedStorage::getItem(napi_env env, napi_callback_info info)
                                                      &result);
                     break;
                 }
-
-                case storage::eNull:
-                    status = napi_get_null(env, &result);
-                    break;
 
                 default:
                     status = napi_get_undefined(env, &result);

@@ -36,8 +36,7 @@ enum ItemType
     eNone = 0,
     eBool = 1,
     eDouble = 2,
-    eString = 3,
-    eNull = 4
+    eString = 3
 };
 
 /**
@@ -364,26 +363,6 @@ inline void SharedItemValue<std::string>::read(boost::interprocess::managed_shar
 using SharedItemBool = SharedItemValue<bool>;
 using SharedItemDouble = SharedItemValue<double>;
 using SharedItemString = SharedItemValue<std::string>;
-
-
-/**
- * @brief  Shared item implementation for null values.
- */
-class SharedItemNull : public SharedItem
-{
-public:
-    /**
-     * @brief  Deleted constructor.
-     */
-    SharedItemNull() = delete;
-
-    /**
-     * @brief  Constructor
-     *
-     * @param tag Tag associated to the shared item.
-     */
-    SharedItemNull(const std::string& tag) : SharedItem(eNull, tag) {}
-};
 
 } // namespace storage
 

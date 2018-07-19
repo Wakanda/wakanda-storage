@@ -334,41 +334,6 @@ TEST_CASE("String item can be created, read, updated and removed")
 }
 
 
-TEST_CASE("Null item can be created, read, and removed")
-{
-    StorageSetter setter("null-storage");
-    std::string key("null-item"), tag;
-    storage::Status status = setter.get()->setItem(key, storage::SharedItemNull(tag));
-
-    SECTION("Creating a null item")
-    {
-        REQUIRE(status == storage::eOk);
-    }
-
-    SECTION("Reading a null item")
-    {
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
-        CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eNull);
-        }
-    }
-
-    SECTION("Removing a null item")
-    {
-        status = setter.get()->removeItem(key);
-        CHECK(status == storage::eOk);
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
-        CHECK(status == storage::eItemNotFound);
-        CHECK(item == nullptr);
-    }
-}
-
-
 TEST_CASE("Items can be created, read, in multi-processus environment")
 {
     SECTION("Performing concurrent read and write accesses from several processes")
