@@ -49,7 +49,6 @@ target_compile_definitions(boost-filesystem PUBLIC BOOST_SYSTEM_NO_LIB)
 
 add_executable(cpp-tests
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
   common_process.h
@@ -69,7 +68,6 @@ target_link_libraries(cpp-tests boost-filesystem boost-system)
 # create target for the child process (multi-process tests)
 add_executable(child-process
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
   "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
   common_process.h

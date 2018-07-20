@@ -23,6 +23,30 @@
 #include <stdio.h>
 #include <string>
 
+
+class ItemConsumer
+{
+public:
+    ItemConsumer() : m_double(0){};
+
+    template <class T> void set(const std::string& key, storage::Item<T>& item) {}
+
+    double m_double;
+    std::string m_string;
+};
+
+template <> void ItemConsumer::set<double>(const std::string& key, storage::Item<double>& item)
+{
+    m_double = item.getValue();
+}
+
+template <>
+void ItemConsumer::set<std::string>(const std::string& key, storage::Item<std::string>& item)
+{
+    m_string = item.getValue();
+}
+
+
 int main(int argc, char* argv[])
 {
     storage::Status status = storage::eOk;
@@ -32,19 +56,19 @@ int main(int argc, char* argv[])
     {
         localStorage->lock();
 
-        std::unique_ptr<storage::SharedItem> item;
-        status = localStorage->getItem(kChildCountKey, item);
+        ItemConsumer consumer;
+        status = localStorage->getItem<ItemConsumer>(kChildCountKey, consumer);
         double count = 1;
         if (status == storage::eOk)
         {
-            count = item->getDouble() + 1;
+            count = consumer.m_double + 1;
         }
-        status =
-            localStorage->setItem(kChildCountKey, storage::SharedItemDouble(count, std::string()));
+        status = localStorage->setItem<double>(kChildCountKey,
+                                               storage::Item<double>(count, std::string()));
 
         if (status == storage::eOk)
         {
-            status = localStorage->getItem(kChildNameKey, item);
+            status = localStorage->getItem<ItemConsumer>(kChildNameKey, consumer);
 
             std::string names(kChildName);
             char buffer[16];
@@ -54,12 +78,12 @@ int main(int argc, char* argv[])
             if (status == storage::eOk)
             {
                 std::string localNames(names);
-                item->getString(names);
+                names = consumer.m_string;
                 names.append(";");
                 names.append(localNames);
             }
-            status = localStorage->setItem(kChildNameKey,
-                                           storage::SharedItemString(names, std::string()));
+            status = localStorage->setItem<std::string>(
+                kChildNameKey, storage::Item<std::string>(names, std::string()));
         }
 
         localStorage->unlock();

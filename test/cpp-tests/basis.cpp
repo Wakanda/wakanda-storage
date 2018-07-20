@@ -20,15 +20,55 @@
 
 // Local includes.
 #include "catch.hpp"
-#include "shared_storage.h"
 #include "common_process.h"
-#include <string>
-#include <future>
-#include <chrono>
+#include "shared_storage.h"
 #include <boost/filesystem.hpp>
 #include <boost/process/child.hpp>
+#include <chrono>
+#include <future>
+#include <string>
 
 const int64_t kSize = 1024 * 1024;
+
+
+
+class ItemConsumer
+{
+public:
+    ItemConsumer() : m_type(storage::eNone), m_bool(false), m_double(0){};
+
+    storage::ItemType getType() const { return m_type; }
+    bool getBool() const { return m_bool; }
+    double getDouble() const { return m_double; }
+    void getString(std::string& value) const { value = m_string; }
+
+    template <class T> void set(const std::string& key, storage::Item<T>& item) {}
+
+    storage::ItemType m_type;
+    bool m_bool;
+    double m_double;
+    std::string m_string;
+};
+
+template <> void ItemConsumer::set<bool>(const std::string& key, storage::Item<bool>& item)
+{
+    m_type = item.getType();
+    m_bool = item.getValue();
+}
+
+template <> void ItemConsumer::set<double>(const std::string& key, storage::Item<double>& item)
+{
+    m_type = item.getType();
+    m_double = item.getValue();
+}
+
+template <>
+void ItemConsumer::set<std::string>(const std::string& key, storage::Item<std::string>& item)
+{
+    m_type = item.getType();
+    m_string = item.getValue();
+}
+
 
 
 class StorageSetter
@@ -88,79 +128,62 @@ TEST_CASE("Bool item can be created, read, updated and removed")
     StorageSetter setter("bool-storage");
     std::string key("bool-item"), tag;
     bool initialValue = false;
-    storage::Status status = setter.get()->setItem(key, storage::SharedItemBool(initialValue, tag));
+    storage::Status status = setter.get()->setItem(key, storage::Item<bool>(initialValue, tag));
 
-    SECTION("Creating a bool item")
-    {
-        REQUIRE(status == storage::eOk);
-    }
+    SECTION("Creating a bool item") { REQUIRE(status == storage::eOk); }
 
     SECTION("Reading a bool item")
     {
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eBool);
-            CHECK(item->getBool() == initialValue);
-        }
+        CHECK(consumer.getType() == storage::eBool);
+        CHECK(consumer.getBool() == initialValue);
     }
 
     SECTION("Updating a bool item")
     {
         bool newValue = true;
-        storage::Status status = setter.get()->setItem(key, storage::SharedItemBool(newValue, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        storage::Status status = setter.get()->setItem(key, storage::Item<bool>(newValue, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getBool() == newValue);
-        }
+        CHECK(consumer.getBool() == newValue);
     }
-	
-	SECTION("Override a bool item with string value")
+
+    SECTION("Override a bool item with string value")
     {
         std::string newStringValue("this is not a boolean value");
         std::string str_tmp;
-        storage::Status status = setter.get()->setItem(key, storage::SharedItemString(newStringValue, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        storage::Status status =
+            setter.get()->setItem(key, storage::Item<std::string>(newStringValue, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            item->getString(str_tmp);
-            CHECK(!str_tmp.empty() == true);
-            CHECK(str_tmp == newStringValue);
-        }
+        consumer.getString(str_tmp);
+        CHECK(!str_tmp.empty() == true);
+        CHECK(str_tmp == newStringValue);
     }
 
     SECTION("Override a bool item with a double value")
     {
         double double_value(3.14);
-        storage::Status status = setter.get()->setItem(key, storage::SharedItemDouble(double_value, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        storage::Status status =
+            setter.get()->setItem(key, storage::Item<double>(double_value, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getDouble() == 3.14);
-        }
+        CHECK(consumer.getDouble() == 3.14);
     }
 
     SECTION("Removing a bool item")
     {
         status = setter.get()->removeItem(key);
         CHECK(status == storage::eOk);
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eItemNotFound);
-        CHECK(item == nullptr);
+        CHECK(consumer.getType() == storage::eNone);
     }
 }
 
@@ -170,69 +193,52 @@ TEST_CASE("Double item can be created, read, updated and removed")
     StorageSetter setter("double-storage");
     std::string key("double-item"), tag;
     double initialValue = 123.456;
-    storage::Status status =
-        setter.get()->setItem(key, storage::SharedItemDouble(initialValue, tag));
+    storage::Status status = setter.get()->setItem(key, storage::Item<double>(initialValue, tag));
 
-    SECTION("Creating a double item")
-    {
-        REQUIRE(status == storage::eOk);
-    }
+    SECTION("Creating a double item") { REQUIRE(status == storage::eOk); }
 
     SECTION("Reading a double item")
     {
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eDouble);
-            CHECK(item->getDouble() == initialValue);
-        }
+        CHECK(consumer.getType() == storage::eDouble);
+        CHECK(consumer.getDouble() == initialValue);
     }
 
     SECTION("Updating a double item")
     {
         double newValue = 456.789;
-        storage::Status status =
-            setter.get()->setItem(key, storage::SharedItemDouble(newValue, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        storage::Status status = setter.get()->setItem(key, storage::Item<double>(newValue, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eDouble);
-            CHECK(item->getDouble() == newValue);
-        }
+        CHECK(consumer.getType() == storage::eDouble);
+        CHECK(consumer.getDouble() == newValue);
     }
 
     SECTION("Override a double with a string value")
     {
-        std::string str_value ("this is not a double value");
+        std::string str_value("this is not a double value");
         std::string tmp_str;
         storage::Status status =
-            setter.get()->setItem(key, storage::SharedItemString(str_value, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+            setter.get()->setItem(key, storage::Item<std::string>(str_value, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eString);
-            item->getString(tmp_str);
-            CHECK(tmp_str == str_value);
-        }
+        CHECK(consumer.getType() == storage::eString);
+        consumer.getString(tmp_str);
+        CHECK(tmp_str == str_value);
     }
 
     SECTION("Removing a double item")
     {
         status = setter.get()->removeItem(key);
         CHECK(status == storage::eOk);
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eItemNotFound);
-        CHECK(item == nullptr);
+        CHECK(consumer.getType() == storage::eNone);
     }
 }
 
@@ -254,26 +260,19 @@ TEST_CASE("String item can be created, read, updated and removed")
         "commodo aliquet.Mauris id pretium velit.Duis libero justo, gravida id rhoncus at, "
         "consectetur porta nulla.Nullam eget viverra mi.");
     storage::Status status =
-        setter.get()->setItem(key, storage::SharedItemString(initialValue, tag));
+        setter.get()->setItem(key, storage::Item<std::string>(initialValue, tag));
 
-    SECTION("Creating a string item")
-    {
-        REQUIRE(status == storage::eOk);
-    }
+    SECTION("Creating a string item") { REQUIRE(status == storage::eOk); }
 
     SECTION("Reading a string item")
     {
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eString);
-            std::string stringValue;
-            item->getString(stringValue);
-            CHECK(stringValue == initialValue);
-        }
+        CHECK(consumer.getType() == storage::eString);
+        std::string stringValue;
+        consumer.getString(stringValue);
+        CHECK(stringValue == initialValue);
     }
 
     SECTION("Updating a string item")
@@ -292,44 +291,35 @@ TEST_CASE("String item can be created, read, updated and removed")
             "turpis a vehicula. Ut ornare ligula vestibulum nulla suscipit, et bibendum massa "
             "dapibus.");
         storage::Status status =
-            setter.get()->setItem(key, storage::SharedItemString(newValue, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+            setter.get()->setItem(key, storage::Item<std::string>(newValue, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eString);
-            std::string stringValue;
-            item->getString(stringValue);
-            CHECK(stringValue == newValue);
-        }
+        CHECK(consumer.getType() == storage::eString);
+        std::string stringValue;
+        consumer.getString(stringValue);
+        CHECK(stringValue == newValue);
     }
 
     SECTION("Override a string with a double value")
     {
         double double_value = 3.14;
-        storage::Status status =
-            setter.get()->setItem(key, storage::SharedItemDouble(3.14, tag));
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        storage::Status status = setter.get()->setItem(key, storage::Item<double>(3.14, tag));
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(item != nullptr);
-        if (item != nullptr)
-        {
-            CHECK(item->getType() == storage::eDouble);
-            CHECK(item->getDouble() == double_value);
-        }
+        CHECK(consumer.getType() == storage::eDouble);
+        CHECK(consumer.getDouble() == double_value);
     }
 
     SECTION("Removing a string item")
     {
         status = setter.get()->removeItem(key);
         CHECK(status == storage::eOk);
-        std::unique_ptr<storage::SharedItem> item;
-        status = setter.get()->getItem(key, item);
+        ItemConsumer consumer;
+        status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eItemNotFound);
-        CHECK(item == nullptr);
+        CHECK(consumer.getType() == storage::eNone);
     }
 }
 
@@ -370,25 +360,25 @@ TEST_CASE("Items can be created, read, in multi-processus environment")
 
         childrenFuture.wait_for(std::chrono::milliseconds(10000));
 
-        std::unique_ptr<storage::SharedItem> item;
-        storage::Status status = setter.get()->getItem(kChildCountKey, item);
+        ItemConsumer consumer;
+        storage::Status status = setter.get()->getItem<ItemConsumer>(kChildCountKey, consumer);
         CHECK(status == storage::eOk);
 
         if (status == storage::eOk)
         {
-            CHECK(item->getType() == storage::eDouble);
-            CHECK(item->getDouble() == childsCount);
+            CHECK(consumer.getType() == storage::eDouble);
+            CHECK(consumer.getDouble() == childsCount);
         }
 
-        status = setter.get()->getItem(kChildNameKey, item);
+        status = setter.get()->getItem<ItemConsumer>(kChildNameKey, consumer);
         CHECK(status == storage::eOk);
 
         if (status == storage::eOk)
         {
-            CHECK(item->getType() == storage::eString);
+            CHECK(consumer.getType() == storage::eString);
 
             std::string names;
-            item->getString(names);
+            consumer.getString(names);
             for (unsigned int iter = 1; iter <= childsCount; ++iter)
             {
                 std::string name(kChildName);
