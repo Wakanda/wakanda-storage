@@ -21,8 +21,6 @@
 // Local includes.
 #include "shared_storage.h"
 
-// Other includes.
-#include <boost/interprocess/sync/scoped_lock.hpp>
 
 namespace storage
 {
@@ -104,92 +102,6 @@ Status SharedStorage::destroy(const char* name)
     return destroyed ? eOk : eCannotDestroyStorage;
 }
 
-Status SharedStorage::setItem(const std::string& key, const SharedItem& item)
-{
-    Status status = eOk;
-    bool constructNewValue = false;
-    boost::interprocess::string ipStrKey(key.c_str());
-    boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
-        *m_mutex);
-
-    ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
-    if (info != m_itemInfoMap->end())
-    {
-        // an item with the same key already exists
-        if (info->second.getType() != item.getType())
-        {
-            // the value type is different, then destroy the value and construct a
-            // new one
-            std::unique_ptr<SharedItem> itemToRemove;
-            createSharedItem(info->second.getType(), std::string(), itemToRemove);
-            if ((itemToRemove != nullptr) && itemToRemove->destroy(m_segment, key))
-            {
-                (*m_itemInfoMap).erase(info);
-                constructNewValue = true;
-            }
-            else
-            {
-                status = eCannotReplaceItem;
-            }
-        }
-        else
-        {
-            // the value type is the same, just update the value and the tag
-            item.write(m_segment, key);
-
-            info->second.setTag(item.getTag());
-        }
-    }
-    else
-    {
-        // the item does not exist, create a new one
-        constructNewValue = true;
-    }
-
-    if (constructNewValue)
-    {
-        item.construct(m_segment, key);
-
-        ItemInfo info(item.getType(), item.getTag(),
-                      InterprocessAllocator<char>(m_segment.get_segment_manager()));
-        (*m_itemInfoMap)
-            .insert(std::pair<const boost::interprocess::string, ItemInfo>(ipStrKey, info));
-    }
-
-    return status;
-}
-
-Status SharedStorage::getItem(const std::string& key, std::unique_ptr<SharedItem>& item)
-{
-    Status status = eOk;
-    std::string strKey;
-    boost::interprocess::string ipStrKey(key.c_str());
-    boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
-        *m_mutex);
-
-    ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
-    if (info != m_itemInfoMap->end())
-    {
-        std::string tag;
-        info->second.getTag(tag);
-        createSharedItem(info->second.getType(), tag, item);
-        if (item != nullptr)
-        {
-            item->read(m_segment, key);
-        }
-        else
-        {
-            status = eUnknownItemType;
-        }
-    }
-    else
-    {
-        status = eItemNotFound;
-    }
-
-    return status;
-}
-
 Status SharedStorage::removeItem(const std::string& key)
 {
     Status status = eOk;
@@ -200,22 +112,15 @@ Status SharedStorage::removeItem(const std::string& key)
     ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
     if (info != m_itemInfoMap->end())
     {
-        std::unique_ptr<SharedItem> item;
-        createSharedItem(info->second.getType(), std::string(), item);
-        if (item != nullptr)
+        ItemDestructor itemDestructor(this);
+        status = getItem<ItemDestructor>(key, info->second, itemDestructor);
+        if ((status == eOk) && itemDestructor.getResult())
         {
-            if (item->destroy(m_segment, key))
-            {
-                m_itemInfoMap->erase(info);
-            }
-            else
-            {
-                status = eCannotRemoveItem;
-            }
+            (*m_itemInfoMap).erase(info);
         }
         else
         {
-            status = eUnknownItemType;
+            status = eCannotRemoveItem;
         }
     }
     else
@@ -233,12 +138,8 @@ void SharedStorage::clear()
 
     for (ItemInfoMap::iterator iter = m_itemInfoMap->begin(); iter != m_itemInfoMap->end(); ++iter)
     {
-        std::unique_ptr<SharedItem> item;
-        createSharedItem(iter->second.getType(), std::string(), item);
-        if (item != nullptr)
-        {
-            item->destroy(m_segment, std::string(iter->first.c_str()));
-        }
+        ItemDestructor itemDestructor(this);
+        getItem<ItemDestructor>(std::string(iter->first.c_str()), iter->second, itemDestructor);
     }
     m_itemInfoMap->clear();
 }

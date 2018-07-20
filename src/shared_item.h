@@ -21,8 +21,6 @@
 #ifndef SHARED_ITEM_H_
 #define SHARED_ITEM_H_
 
-#include <boost/interprocess/containers/string.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
 #include <string>
 
 namespace storage
@@ -39,330 +37,121 @@ enum ItemType
     eString = 3
 };
 
+
 /**
- * @brief  Shared item descriptor class.
- * This class doesn't contain any value and should be only used as parameter to set an item into the
+ * @brief  Item descriptor class.
+ * This class describes a shared item. Item instance is used as parameter to set an item into the
  * storage and get an item from the storage.
  */
-class SharedItem
+template <class T> class Item
 {
 public:
     /**
-     * @brief  Deleted constructor.
+     * @brief  Default constructor.
      */
-    SharedItem() = delete;
+    Item() : m_type(eNone) {}
 
     /**
      * @brief  Constructor.
      *
-     * @param type Type of the shared item.
-     * @param tag Tag associated to the shared item.
+     * @param tag Tag associated to the item.
      */
-
-    SharedItem(const ItemType& type, const std::string& tag) : m_type(type), m_tag(tag) {}
+    Item(const std::string& tag) : m_type(eNone), m_tag(tag) {}
 
     /**
-     * @brief  Get the type of the shared item.
+     * @brief  Constructor.
      *
-     * @return Type of the shared item.
+     * @param value Value of the item.
+     * @param tag Tag associated to the item.
      */
-    ItemType getType() const { return m_type; }
+    Item(const T& value, const std::string& tag) : m_value(value), m_type(eNone), m_tag() {}
 
     /**
-     * @brief  Get the tag associated to the shared item.
+     * @brief  Get the value of the item.
      *
-     * @return Tag associated to the shared item.
+     * @return Value of the item.
      */
-    std::string getTag() const { return m_tag; }
+    const T& getValue() const { return m_value; }
 
     /**
-     * @brief  Get shared item bool value.
+     * @brief  Set the value of the item.
      *
-     * @return Bool value.
+     * @param value Value of the item.
      */
-    virtual bool getBool() const { return false; }
+    void setValue(const T& value) { m_value = value; }
 
     /**
-     * @brief  Get shared item double value.
+     * @brief  Get the type of the item.
      *
-     * @return Double value.
+     * @return Type of the item.
      */
-    virtual double getDouble() const { return 0.0; }
+    const ItemType& getType() const { return m_type; }
 
     /**
-     * @brief  Get shared item string value.
+     * @brief  Get the tag associated to the item.
      *
-     * @param[out] value String value.
+     * @return Tag associated to the item.
      */
-    virtual void getString(std::string& value) const {}
+    const std::string& getTag() const { return m_tag; }
 
     /**
-     * @brief  Construct the shared item into the given memory segment and write the value.
+     * @brief  Set the tag associated to the item.
      *
-     * @param segment Memory segment in which construct the item.
-     * @param key Key of the item.
+     * @param tag Tag associated to the item.
      */
-    virtual void construct(boost::interprocess::managed_shared_memory& segment,
-                           const std::string& key) const
-    {
-    }
-
-    /**
-     * @brief  Destroy the shared item into the given memory segment.
-     *
-     * @param segment Memory segment in which destroy the item.
-     * @param key Key of the item.
-     *
-     * @return true if destroying the item succeeded.
-     */
-    virtual bool destroy(boost::interprocess::managed_shared_memory& segment,
-                         const std::string& key) const
-    {
-        return true;
-    }
-
-    /**
-     * @brief  Write the shared item value into the given memory segment.
-     *
-     * @param segment Memory segment in which write the value.
-     * @param key Key of the item.
-     */
-    virtual void write(boost::interprocess::managed_shared_memory& segment,
-                       const std::string& key) const
-    {
-    }
-
-    /**
-     * @brief  Read the shared item value from the given memory segment.
-     *
-     * @param segment Memory segment from which read the value.
-     * @param key Key of the item.
-     */
-    virtual void read(boost::interprocess::managed_shared_memory& segment, const std::string& key)
-    {
-    }
+    void setTag(const std::string& tag) { m_tag = tag; }
 
 protected:
+    T m_value;
     ItemType m_type;
     std::string m_tag;
 };
 
 
 /**
- * @brief  Create a shared item instance from a given type.
- *
- * @param type Type of the new shared item.
- * @param tag Tag associated to the new shared item.
- * @param[out] item Created shared item.
- */
-void createSharedItem(const ItemType type, const std::string& tag,
-                      std::unique_ptr<SharedItem>& item);
-
-
-/**
- *  @brief Shared item template class.
- */
-template <class T> class SharedItemValue : public SharedItem
-{
-public:
-    // Type defs.
-    using CharAllocator =
-        boost::interprocess::allocator<char,
-                                       boost::interprocess::managed_shared_memory::segment_manager>;
-
-    using StringValue =
-        boost::interprocess::basic_string<char, std::char_traits<char>, CharAllocator>;
-
-    /**
-     * @brief  Deleted constructor.
-     */
-    SharedItemValue() = delete;
-
-    /**
-     * @brief  Constructor.
-     *
-     * @param tag Tag associated to the shared item.
-     */
-    SharedItemValue(const std::string& tag) : SharedItem(eNone, tag) {}
-
-    /**
-     * @brief  Constructor.
-     *
-     * @param value Value of the shared item.
-     * @param tag Tag associated to the shared item.
-     */
-    SharedItemValue(const T& value, const std::string& tag) : SharedItem(eNone, tag) {}
-
-    /**
-     * @brief  Get shared item bool value. Generic implementation.
-     *
-     * @return Bool value.
-     */
-    bool getBool() const override { return false; }
-
-    /**
-     * @brief  Get shared item double value. Generic implementation.
-     *
-     * @return Double value.
-     */
-    double getDouble() const override { return 0.0; }
-
-    /**
-     * @brief  Get shared item string value. Generic implementation.
-     *
-     * @param[out] value String value.
-     */
-    void getString(std::string& value) const override {}
-
-    /**
-     * @brief  Construct the shared item into the given memory segment and write the value. Generic
-     * implementation.
-     *
-     * @param segment Memory segment in which construct the item.
-     * @param key Key of the item.
-     */
-    void construct(boost::interprocess::managed_shared_memory& segment,
-                   const std::string& key) const override
-    {
-        segment.construct<T>(key.c_str())(m_value);
-    }
-
-    /**
-     * @brief  Destroy the shared item into the given memory segment. Generic implementation.
-     *
-     * @param segment Memory segment in which destroy the item.
-     * @param key Key of the item.
-     *
-     * @return true if destroying the item succeeded.
-     */
-    bool destroy(boost::interprocess::managed_shared_memory& segment,
-                 const std::string& key) const override
-    {
-        return segment.destroy<T>(key.c_str());
-    }
-
-    /**
-     * @brief  Write the shared item value into the given memory segment. Generic implementation.
-     *
-     * @param segment Memory segment in which write the value.
-     * @param key Key of the item.
-     */
-    void write(boost::interprocess::managed_shared_memory& segment,
-               const std::string& key) const override
-    {
-        T* localValue = segment.find<T>(key.c_str()).first;
-        *localValue = m_value;
-    }
-
-    /**
-     * @brief  Read the shared item value from the given memory segment. Generic implementation.
-     *
-     * @param segment Memory segment from which read the value.
-     * @param key Key of the item.
-     */
-    void read(boost::interprocess::managed_shared_memory& segment, const std::string& key) override
-    {
-        m_value = *segment.find<T>(key.c_str()).first;
-    }
-
-protected:
-    T m_value;
-};
-
-/**
  * @brief  Bool value specializations.
  */
+template <> inline Item<bool>::Item() : m_value(false), m_type(eBool) {}
+
 template <>
-inline SharedItemValue<bool>::SharedItemValue(const std::string& tag)
-: SharedItem(eBool, tag), m_value(false)
+inline Item<bool>::Item(const std::string& tag) : m_value(false), m_type(eBool), m_tag(tag)
 {
 }
 
 template <>
-inline SharedItemValue<bool>::SharedItemValue(const bool& value, const std::string& tag)
-: SharedItem(eBool, tag), m_value(value)
+inline Item<bool>::Item(const bool& value, const std::string& tag)
+: m_value(value), m_type(eBool), m_tag(tag)
 {
 }
-
-template <> inline bool SharedItemValue<bool>::getBool() const { return m_value; }
 
 /**
  * @brief  Double values specializations.
  */
+template <> inline Item<double>::Item() : m_value(0.0), m_type(eDouble) {}
+
 template <>
-inline SharedItemValue<double>::SharedItemValue(const std::string& tag)
-: SharedItem(eDouble, tag), m_value(0.0)
+inline Item<double>::Item(const std::string& tag) : m_value(0.0), m_type(eDouble), m_tag(tag)
 {
 }
 
 template <>
-inline SharedItemValue<double>::SharedItemValue(const double& value, const std::string& tag)
-: SharedItem(eDouble, tag), m_value(value)
+inline Item<double>::Item(const double& value, const std::string& tag)
+: m_value(value), m_type(eDouble), m_tag(tag)
 {
 }
-
-template <> inline double SharedItemValue<double>::getDouble() const { return m_value; }
 
 /**
  * @brief  String values specializations.
  */
-template <>
-inline SharedItemValue<std::string>::SharedItemValue(const std::string& tag)
-: SharedItem(eString, tag)
-{
-}
+template <> inline Item<std::string>::Item() : m_type(eString) {}
+
+template <> inline Item<std::string>::Item(const std::string& tag) : m_type(eString), m_tag(tag) {}
 
 template <>
-inline SharedItemValue<std::string>::SharedItemValue(const std::string& value,
-                                                     const std::string& tag)
-: SharedItem(eString, tag), m_value(value)
+inline Item<std::string>::Item(const std::string& value, const std::string& tag)
+: m_value(value), m_type(eString), m_tag(tag)
 {
 }
-
-template <> inline void SharedItemValue<std::string>::getString(std::string& value) const
-{
-    value.assign(m_value.c_str());
-}
-
-template <>
-inline void
-SharedItemValue<std::string>::construct(boost::interprocess::managed_shared_memory& segment,
-                                        const std::string& key) const
-{
-    segment.construct<StringValue>(key.c_str())(m_value.c_str(), segment.get_segment_manager());
-}
-
-template <>
-inline bool
-SharedItemValue<std::string>::destroy(boost::interprocess::managed_shared_memory& segment,
-                                      const std::string& key) const
-{
-    return segment.destroy<StringValue>(key.c_str());
-}
-
-template <>
-inline void SharedItemValue<std::string>::write(boost::interprocess::managed_shared_memory& segment,
-                                                const std::string& key) const
-{
-    StringValue* localValue = segment.find<StringValue>(key.c_str()).first;
-    localValue->assign(m_value.c_str());
-}
-
-template <>
-inline void SharedItemValue<std::string>::read(boost::interprocess::managed_shared_memory& segment,
-                                               const std::string& key)
-{
-    StringValue* localValue = segment.find<StringValue>(key.c_str()).first;
-    m_value.assign(localValue->c_str());
-}
-
-
-/**
- * @brief  Shared item type defs.
- */
-using SharedItemBool = SharedItemValue<bool>;
-using SharedItemDouble = SharedItemValue<double>;
-using SharedItemString = SharedItemValue<std::string>;
 
 } // namespace storage
 
