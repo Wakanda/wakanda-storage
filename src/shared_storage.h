@@ -446,7 +446,8 @@ inline Status SharedStorage::getItem(const std::string& key, const ItemInfo& inf
     {
         bool value = false;
         readItemValue<bool>(key, value);
-        consumer.template set<bool>(key, Item<bool>(value, tag));
+        Item<bool> item(value, tag);
+        consumer.template set<bool>(key, item);
         break;
     }
 
@@ -454,7 +455,8 @@ inline Status SharedStorage::getItem(const std::string& key, const ItemInfo& inf
     {
         double value = 0.0;
         readItemValue<double>(key, value);
-        consumer.template set<double>(key, Item<double>(value, tag));
+        Item<double> item(value, tag);
+        consumer.template set<double>(key, item);
         break;
     }
 
@@ -462,7 +464,8 @@ inline Status SharedStorage::getItem(const std::string& key, const ItemInfo& inf
     {
         std::string value;
         readItemValue<std::string>(key, value);
-        consumer.template set<std::string>(key, Item<std::string>(value, tag));
+        Item<std::string> item(value, tag);
+        consumer.template set<std::string>(key, item);
         break;
     }
 
