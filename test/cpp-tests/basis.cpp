@@ -38,9 +38,9 @@ public:
     ItemConsumer() : m_type(storage::eNone), m_bool(false), m_double(0){};
 
     storage::ItemType getType() const { return m_type; }
-    bool getBool() const { return m_bool; }
-    double getDouble() const { return m_double; }
-    void getString(std::string& value) const { value = m_string; }
+    operator bool() const { return m_bool; }
+    operator double() const { return m_double; }
+    operator std::string() const { return m_string; }
 
     template <class T> void set(const std::string& key, storage::Item<T>& item) {}
 
@@ -143,7 +143,7 @@ TEST_CASE("Bool item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eBool);
-        CHECK(consumer.getBool() == initialValue);
+        CHECK(static_cast<bool>(consumer) == initialValue);
     }
 
     SECTION("Updating a bool item")
@@ -153,19 +153,18 @@ TEST_CASE("Bool item can be created, read, updated and removed")
         ItemConsumer consumer;
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(consumer.getBool() == newValue);
+        CHECK(static_cast<bool>(consumer) == newValue);
     }
 
     SECTION("Override a bool item with string value")
     {
         std::string newStringValue("this is not a boolean value");
-        std::string str_tmp;
         storage::Status status =
             setter.get()->setItem(key, storage::Item<std::string>(newStringValue, tag));
         ItemConsumer consumer;
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        consumer.getString(str_tmp);
+        std::string str_tmp = static_cast<std::string>(consumer);
         CHECK(!str_tmp.empty() == true);
         CHECK(str_tmp == newStringValue);
     }
@@ -178,7 +177,7 @@ TEST_CASE("Bool item can be created, read, updated and removed")
         ItemConsumer consumer;
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
-        CHECK(consumer.getDouble() == 3.14);
+        CHECK(static_cast<double>(consumer) == 3.14);
     }
 
     SECTION("Removing a bool item")
@@ -208,7 +207,7 @@ TEST_CASE("Double item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eDouble);
-        CHECK(consumer.getDouble() == initialValue);
+        CHECK(static_cast<double>(consumer) == initialValue);
     }
 
     SECTION("Updating a double item")
@@ -219,20 +218,19 @@ TEST_CASE("Double item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eDouble);
-        CHECK(consumer.getDouble() == newValue);
+        CHECK(static_cast<double>(consumer) == newValue);
     }
 
     SECTION("Override a double with a string value")
     {
         std::string str_value("this is not a double value");
-        std::string tmp_str;
         storage::Status status =
             setter.get()->setItem(key, storage::Item<std::string>(str_value, tag));
         ItemConsumer consumer;
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eString);
-        consumer.getString(tmp_str);
+        std::string tmp_str = static_cast<std::string>(consumer);
         CHECK(tmp_str == str_value);
     }
 
@@ -275,8 +273,7 @@ TEST_CASE("String item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eString);
-        std::string stringValue;
-        consumer.getString(stringValue);
+        std::string stringValue = static_cast<std::string>(consumer);
         CHECK(stringValue == initialValue);
     }
 
@@ -301,8 +298,7 @@ TEST_CASE("String item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eString);
-        std::string stringValue;
-        consumer.getString(stringValue);
+        std::string stringValue = static_cast<std::string>(consumer);
         CHECK(stringValue == newValue);
     }
 
@@ -314,7 +310,7 @@ TEST_CASE("String item can be created, read, updated and removed")
         status = setter.get()->getItem<ItemConsumer>(key, consumer);
         CHECK(status == storage::eOk);
         CHECK(consumer.getType() == storage::eDouble);
-        CHECK(consumer.getDouble() == double_value);
+        CHECK(static_cast<double>(consumer) == double_value);
     }
 
     SECTION("Removing a string item")
@@ -372,7 +368,7 @@ TEST_CASE("Items can be created, read, in multi-processus environment")
         if (status == storage::eOk)
         {
             CHECK(consumer.getType() == storage::eDouble);
-            CHECK(consumer.getDouble() == childsCount);
+            CHECK(static_cast<double>(consumer) == childsCount);
         }
 
         status = setter.get()->getItem<ItemConsumer>(kChildNameKey, consumer);
@@ -382,8 +378,7 @@ TEST_CASE("Items can be created, read, in multi-processus environment")
         {
             CHECK(consumer.getType() == storage::eString);
 
-            std::string names;
-            consumer.getString(names);
+            std::string names = static_cast<std::string>(consumer);
             for (unsigned int iter = 1; iter <= childsCount; ++iter)
             {
                 std::string name(kChildName);
