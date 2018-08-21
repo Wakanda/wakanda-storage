@@ -76,11 +76,10 @@ class StorageSetter
 public:
     StorageSetter() = delete;
 
-    StorageSetter(const char* name)
+    StorageSetter(const std::string& name)
     {
-        m_name.assign(name);
         storage::Status status = storage::eOk;
-        m_storage.reset(storage::SharedStorage::create(name, kSize, status));
+        m_storage.reset(storage::SharedStorage::create(name.c_str(), kSize, status));
     }
 
     storage::SharedStorage* get() const { return m_storage.get(); }
@@ -95,7 +94,6 @@ private:
         }
     };
 
-    std::string m_name;
     std::unique_ptr<storage::SharedStorage, StorageDeleter> m_storage;
 };
 
@@ -132,7 +130,7 @@ TEST_CASE("Shared storage can be created, opened and destroyed")
 
 TEST_CASE("Bool item can be created, read, updated and removed")
 {
-    StorageSetter setter("bool-storage");
+    StorageSetter setter(std::string("bool-storage"));
     std::string key("bool-item"), tag;
     bool initialValue = false;
     storage::Status status = setter.get()->setItem(key, storage::Item<bool>(initialValue, tag));
@@ -197,7 +195,7 @@ TEST_CASE("Bool item can be created, read, updated and removed")
 
 TEST_CASE("Double item can be created, read, updated and removed")
 {
-    StorageSetter setter("double-storage");
+    StorageSetter setter(std::string("double-storage"));
     std::string key("double-item"), tag;
     double initialValue = 123.456;
     storage::Status status = setter.get()->setItem(key, storage::Item<double>(initialValue, tag));
@@ -252,7 +250,7 @@ TEST_CASE("Double item can be created, read, updated and removed")
 
 TEST_CASE("String item can be created, read, updated and removed")
 {
-    StorageSetter setter("string-storage");
+    StorageSetter setter(std::string("string-storage"));
     std::string key("string-item"), tag;
     std::string initialValue(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit.Etiam at leo vel tortor tristique "
@@ -335,7 +333,7 @@ TEST_CASE("Items can be created, read, in multi-processus environment")
 {
     SECTION("Performing concurrent read and write accesses from several processes")
     {
-        StorageSetter setter(kStorageName.c_str());
+        StorageSetter setter(kStorageName);
 
         REQUIRE(setter.get() != nullptr);
 
