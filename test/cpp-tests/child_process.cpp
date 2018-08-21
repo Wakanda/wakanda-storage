@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 {
     storage::Status status = storage::eOk;
     std::unique_ptr<storage::SharedStorage> localStorage(
-        storage::SharedStorage::open(kStorageName.c_str(), status));
+        storage::SharedStorage::open(kStorageName, status));
     if (status == storage::eOk)
     {
         localStorage->lock();

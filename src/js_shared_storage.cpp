@@ -132,7 +132,7 @@ napi_value JsSharedStorage::create(napi_env env, napi_callback_info info)
                 {
                     storage::Status stStatus = storage::eOk;
                     storage::SharedStorage* storage =
-                        storage::SharedStorage::create(strKey.c_str(), size, stStatus);
+                        storage::SharedStorage::create(strKey, size, stStatus);
                     if (storage != nullptr)
                     {
                         status = JsSharedStorage::createInstance(env, storage, &result);
@@ -159,8 +159,7 @@ napi_value JsSharedStorage::open(napi_env env, napi_callback_info info)
             if (status == napi_ok)
             {
                 storage::Status stStatus = storage::eOk;
-                storage::SharedStorage* storage =
-                    storage::SharedStorage::open(strKey.c_str(), stStatus);
+                storage::SharedStorage* storage = storage::SharedStorage::open(strKey, stStatus);
                 if (storage != nullptr)
                 {
                     status = JsSharedStorage::createInstance(env, storage, &result);
@@ -185,7 +184,7 @@ napi_value JsSharedStorage::destroy(napi_env env, napi_callback_info info)
             status = napi_helpers::getValueStringUTF8(env, args[0], strKey);
             if (status == napi_ok)
             {
-                storage::Status stStatus = storage::SharedStorage::destroy(strKey.c_str());
+                storage::Status stStatus = storage::SharedStorage::destroy(strKey);
                 status = napi_get_boolean(env, (stStatus == storage::eOk), &result);
             }
         }

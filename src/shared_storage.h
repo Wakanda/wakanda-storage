@@ -145,7 +145,7 @@ public:
      *
      * @return Pointer to a new shared storage.
      */
-    static SharedStorage* create(const char* name, const int64_t size, Status& status);
+    static SharedStorage* create(const std::string& name, const int64_t size, Status& status);
 
     /**
      * @brief  Only open a shared storage.
@@ -155,7 +155,7 @@ public:
      *
      * @return Pointer to the opened shared storage.
      */
-    static SharedStorage* open(const char* name, Status& status);
+    static SharedStorage* open(const std::string& name, Status& status);
 
     /**
      * @brief  Destroy a shared storage.
@@ -164,7 +164,7 @@ public:
      *
      * @return eOk if destruction succeeded.
      */
-    static Status destroy(const char* name);
+    static Status destroy(const std::string& name);
 
     /**
      * @brief  Destroy a shared storage.
@@ -238,14 +238,14 @@ private:
      * @param name Name of the new shared storage.
      * @param size Size in bytes of the new shared storage.
      */
-    SharedStorage(const char* name, const int64_t size);
+    SharedStorage(const std::string& name, const int64_t size);
 
     /**
      * @brief Constructor.
      *
      * @param name Name of the new shared storage.
      */
-    SharedStorage(const char* name);
+    SharedStorage(const std::string& name);
 
     /**
      *  @brief  Initialize the shared storage.

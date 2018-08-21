@@ -79,7 +79,7 @@ public:
     StorageSetter(const std::string& name)
     {
         storage::Status status = storage::eOk;
-        m_storage.reset(storage::SharedStorage::create(name.c_str(), kSize, status));
+        m_storage.reset(storage::SharedStorage::create(name, kSize, status));
     }
 
     storage::SharedStorage* get() const { return m_storage.get(); }
@@ -106,7 +106,7 @@ TEST_CASE("Shared storage can be created, opened and destroyed")
     {
         storage::Status status = storage::eOk;
         std::unique_ptr<storage::SharedStorage> localStorage(
-            storage::SharedStorage::create(tmpStorageName.c_str(), kSize, status));
+            storage::SharedStorage::create(tmpStorageName, kSize, status));
         REQUIRE(status == storage::eOk);
         REQUIRE(localStorage != nullptr);
     }
@@ -115,14 +115,14 @@ TEST_CASE("Shared storage can be created, opened and destroyed")
     {
         storage::Status status = storage::eOk;
         std::unique_ptr<storage::SharedStorage> localStorage(
-            storage::SharedStorage::open(tmpStorageName.c_str(), status));
+            storage::SharedStorage::open(tmpStorageName, status));
         CHECK(status == storage::eOk);
         CHECK(localStorage != nullptr);
     }
 
     SECTION("Destroying a shared storage")
     {
-        storage::Status status = storage::SharedStorage::destroy(tmpStorageName.c_str());
+        storage::Status status = storage::SharedStorage::destroy(tmpStorageName);
         REQUIRE(status == storage::eOk);
     }
 }

@@ -25,15 +25,15 @@
 namespace storage
 {
 
-SharedStorage::SharedStorage(const char* name, const int64_t size)
-: m_name(name), m_segment(boost::interprocess::create_only, name, size), m_mutex(nullptr),
+SharedStorage::SharedStorage(const std::string& name, const int64_t size)
+: m_name(name), m_segment(boost::interprocess::create_only, name.c_str(), size), m_mutex(nullptr),
   m_itemInfoMap(nullptr)
 {
     initialize();
 }
 
-SharedStorage::SharedStorage(const char* name)
-: m_name(name), m_segment(boost::interprocess::open_only, name), m_mutex(nullptr),
+SharedStorage::SharedStorage(const std::string& name)
+: m_name(name), m_segment(boost::interprocess::open_only, name.c_str()), m_mutex(nullptr),
   m_itemInfoMap(nullptr)
 {
     initialize();
@@ -53,7 +53,7 @@ void SharedStorage::initialize()
 
 SharedStorage::~SharedStorage() {}
 
-SharedStorage* SharedStorage::create(const char* name, const int64_t size, Status& status)
+SharedStorage* SharedStorage::create(const std::string& name, const int64_t size, Status& status)
 {
     SharedStorage* storage = nullptr;
     status = eOk;
@@ -70,7 +70,7 @@ SharedStorage* SharedStorage::create(const char* name, const int64_t size, Statu
     return storage;
 }
 
-SharedStorage* SharedStorage::open(const char* name, Status& status)
+SharedStorage* SharedStorage::open(const std::string& name, Status& status)
 {
     SharedStorage* storage = nullptr;
     status = eOk;
@@ -87,9 +87,9 @@ SharedStorage* SharedStorage::open(const char* name, Status& status)
     return storage;
 }
 
-Status SharedStorage::destroy(const char* name)
+Status SharedStorage::destroy(const std::string& name)
 {
-    bool destroyed = boost::interprocess::shared_memory_object::remove(name);
+    bool destroyed = boost::interprocess::shared_memory_object::remove(name.c_str());
     return destroyed ? eOk : eCannotDestroyStorage;
 }
 
