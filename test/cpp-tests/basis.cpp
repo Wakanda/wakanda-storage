@@ -83,13 +83,20 @@ public:
         m_storage.reset(storage::SharedStorage::create(name, kSize, status));
     }
 
-    ~StorageSetter() { storage::SharedStorage::destroy(m_name.c_str()); }
-
     storage::SharedStorage* get() const { return m_storage.get(); }
 
 private:
+    struct StorageDeleter
+    {
+        void operator()(storage::SharedStorage* storage)
+        {
+            storage->destroy();
+            delete storage;
+        }
+    };
+
     std::string m_name;
-    std::unique_ptr<storage::SharedStorage> m_storage;
+    std::unique_ptr<storage::SharedStorage, StorageDeleter> m_storage;
 };
 
 

@@ -89,16 +89,13 @@ SharedStorage* SharedStorage::open(const char* name, Status& status)
 
 Status SharedStorage::destroy(const char* name)
 {
-    bool destroyed = false;
+    bool destroyed = boost::interprocess::shared_memory_object::remove(name);
+    return destroyed ? eOk : eCannotDestroyStorage;
+}
 
-    try
-    {
-        destroyed = boost::interprocess::shared_memory_object::remove(name);
-    }
-    catch (const std::exception&)
-    {
-    }
-
+Status SharedStorage::destroy()
+{
+    bool destroyed = boost::interprocess::shared_memory_object::remove(m_name.c_str());
     return destroyed ? eOk : eCannotDestroyStorage;
 }
 

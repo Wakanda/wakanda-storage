@@ -167,6 +167,13 @@ public:
     static Status destroy(const char* name);
 
     /**
+     * @brief  Destroy a shared storage.
+     *
+     * @return eOk if destruction succeeded.
+     */
+    Status destroy();
+
+    /**
      * @brief  Insert a new item into the shared storage. Can throw error.
      *
      * @param key Key to identify the new item.
