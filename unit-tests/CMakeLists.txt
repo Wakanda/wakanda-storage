@@ -28,38 +28,38 @@ project (cpp-tests)
 
 #create target for lib boost system
 file(GLOB_RECURSE boost_system_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/libs/boost/system/src/*.*")
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/system/src/*.*")
 
 add_library(boost-system STATIC ${boost_system_src})
 
 target_include_directories(boost-system PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps")
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
 
 #create target for lib boost filesystem
 file(GLOB_RECURSE boost_filesystem_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/libs/boost/filesystem/src/*.*")
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/filesystem/src/*.*")
 
 add_library(boost-filesystem STATIC ${boost_filesystem_src})
 
 target_include_directories(boost-filesystem PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps")
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
 
 target_compile_definitions(boost-filesystem PUBLIC BOOST_FILESYSTEM_NO_LIB)
 target_compile_definitions(boost-filesystem PUBLIC BOOST_SYSTEM_NO_LIB)
 
 add_executable(cpp-tests
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_item.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_storage.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_storage.cpp"
   common_process.h
   basis.cpp
   main.cpp
 )
 
 target_include_directories(cpp-tests PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps/catch2"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/catch2"
 )
 
 target_compile_definitions(cpp-tests PUBLIC BOOST_DATE_TIME_NO_LIB)
@@ -67,19 +67,21 @@ target_link_libraries(cpp-tests boost-filesystem boost-system)
 
 # create target for the child process (multi-process tests)
 add_executable(child-process
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_item.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src/shared_storage.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_item.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_storage.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src/shared_storage.cpp"
   common_process.h
   child_process.cpp
 )
 
 target_include_directories(child-process PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../../deps"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
 )
 
 target_compile_definitions(child-process PUBLIC BOOST_DATE_TIME_NO_LIB)
+
+add_dependencies(cpp-tests child-process)
 
 if (UNIX AND NOT APPLE)
   find_library(LIB_RT rt)
