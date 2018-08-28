@@ -19,7 +19,7 @@
  */
 
 // Local includes.
-#include "shared_storage.h"
+#include "js_shared_storage.h"
 
 // Other includes.
 #include <node_api.h>
