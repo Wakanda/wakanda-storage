@@ -3,11 +3,12 @@
   "version": "0.0.10",
   "description": "Easy to use Node storage shared between all your Node processes",
   "main": "./lib/index.js",
-  "dependencies": { 
+  "dependencies": {
     "node-pre-gyp": "0.9.1",
-    "node-gyp": "3.6.2"
+    "node-gyp": "3.6.2",
+    "expect.js": "0.3.1"
   },
-  "devDependencies": { },
+  "devDependencies": {},
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "mocha"
@@ -23,7 +24,10 @@
     "type": "git",
     "url": "git+https://github.com/Wakanda/wakanda-storage.git"
   },
-  "keywords": ["storage", "shared storage"],
+  "keywords": [
+    "storage",
+    "shared storage"
+  ],
   "author": "Wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
   "license": "MIT",
   "types": "./wakanda-storage.d.ts"
