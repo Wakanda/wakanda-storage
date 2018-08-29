@@ -111,3 +111,25 @@ Try to lock the storage. If already lock, then it returns `false`.
 ```
 movies.tryLock();
 ```
+
+## Note for developers and contributors
+
+Once the repository is cloned, the addon is ready to be built and tested.
+
+To build the addon, run:
+
+```
+npm install --build-from-source
+```
+
+To execute the JavaScript tests, run:
+
+```
+npm test
+```
+
+To build and execute the unit tests which are written in c++, run:
+
+```
+npm run unit-tests
+```
