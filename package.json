@@ -13,7 +13,6 @@
   "devDependencies": {},
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "build": "node-pre-gyp install --build-from-source",
     "test": "mocha",
     "unit-tests": "cmake-js compile -d unit-tests -T cpp-tests -s c++14 && node unit-tests/launch.js"
   },
