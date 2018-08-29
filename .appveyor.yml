@@ -5,28 +5,14 @@ platform: x64
 configuration: Release
 install:
  - ps: Install-Product node $env:nodejs_version $env:platform
- - npm install -g node-gyp
- - npm install -g node-pre-gyp
- - npm install -g mocha
- - npm install  expect.js
 build_script:
  - npm install --build-from-source
- - node-pre-gyp configure
- - node-pre-gyp build
-# - mkdir %APPVEYOR_BUILD_FOLDER%\bin
  - copy %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage.node %APPVEYOR_BUILD_FOLDER%\bin
  - 7z a -ttar %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar %APPVEYOR_BUILD_FOLDER%\bin
  - 7z a -tgzip %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage_win32.tar.gz %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar
- - cd %APPVEYOR_BUILD_FOLDER%\test\cpp-tests
- - cmake  -DCMAKE_CONFIGURATION_TYPES="Release" -G "Visual Studio 15 2017 Win64"
- - msbuild cpp-tests.vcxproj /property:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
- - msbuild child-process.vcxproj /property:Configuration=Release /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
- 
 test_script:
  - npm test
- - cd %APPVEYOR_BUILD_FOLDER%\test\cpp-tests\Release
- - cpp-tests.exe
-  
+ - npm run unit-tests
 artifacts:
  path: build\Release\wakanda_storage_win32.tar.gz
  name: wakanda_storage_win32.tar.gz
