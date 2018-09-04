@@ -67,7 +67,9 @@ enum Status
     eUnknownItemType = 4,
     eItemNotFound = 5,
     eCannotRemoveItem = 6,
-    eCannotReplaceItem = 7
+    eCannotReplaceItem = 7,
+    eCannotConstructItem = 8,
+    eCannotDestroyItem = 9
 };
 
 /**
@@ -141,7 +143,8 @@ public:
      *
      * @param name Name of the new shared storage.
      * @param size Size in bytes of the new shared storage.
-     * @param[out] status Status is eOk if creation succeeded.
+     * @param[out] status Status is eOk if creation succeeded
+     * or eCannotCreateStorage if creation failed.
      *
      * @return Pointer to a new shared storage.
      */
@@ -151,7 +154,8 @@ public:
      * @brief  Only open a shared storage.
      *
      * @param name Name of the shared storage to open.
-     * @param[out] status Status is eOk if opening succeeded.
+     * @param[out] status Status is eOk if opening succeeded
+     * or eCannotOpenStorage if opening failed.
      *
      * @return Pointer to the opened shared storage.
      */
@@ -162,14 +166,16 @@ public:
      *
      * @param name Name of the shared storage to destroy.
      *
-     * @return eOk if destruction succeeded.
+     * @return eOk if destruction succeeded
+     * or eCannotDestroyStorage if destruction failed.
      */
     static Status destroy(const std::string& name);
 
     /**
      * @brief  Destroy a shared storage.
      *
-     * @return eOk if destruction succeeded.
+     * @return eOk if destruction succeeded
+     * or eCannotDestroyStorage if destruction failed.
      */
     Status destroy();
 
@@ -180,7 +186,9 @@ public:
      * @param item Descriptor of the new item.
      * @tparam T Value type of the item.
      *
-     * @return eOk if inserting the item succeeded.
+     * @return eOk if inserting the item succeeded
+     * or eCannotConstructItem if inserting the item failed
+     * or eCannotReplaceItem if an item with the same key cannot be overwritten.
      */
     template <class T> Status setItem(const std::string& key, const Item<T>& item);
 
@@ -194,7 +202,9 @@ public:
      *   template<class T>
      *   void set(const std::string& key, Item<T>& item);
      *
-     * @return eOk if the item was found.
+     * @return eOk if the item was found
+     * or eItemNotFound if the item doesn't exist
+     * or eUnknownItemType if the item type is unsupported.
      */
     template <class C> Status getItem(const std::string& key, C& consumer);
 
@@ -203,14 +213,19 @@ public:
      *
      * @param key Key of the desired item.
      *
-     * @return eOk if removing the item succeeded.
+     * @return eOk if removing the item succeeded
+     * or eCannotRemoveItem if removing the item failed
+     * or eItemNotFound if the item doesn't exist.
      */
     Status removeItem(const std::string& key);
 
     /**
      * @brief  Clear the shared storage. Can throw error.
+     *
+     * @return eOk if the storage was successfully cleared
+     * or eCannotRemoveItem if removing all items failed.
      */
-    void clear();
+    Status clear();
 
     /**
      * @brief  Lock writing on the shared storage.
@@ -263,7 +278,9 @@ private:
      *   template<class T>
      *   void set(const std::string& key, Item<T>& item);
      *
-     * @return eOk if the item was found.
+     * @return eOk if the item was found
+     * or eItemNotFound if the item doesn't exist
+     * or eUnknownItemType if the item type is unsupported.
      */
     template <class C> Status getItem(const std::string& key, const ItemInfo& info, C& consumer);
 
@@ -290,34 +307,43 @@ private:
      *
      * @param key Key of the item.
      * @param value Value of the item.
+     *
+     * @return eOk if instantiating the item succeeded
+     * or eCannotConstructItem if instantiating the item failed.
      */
-    template <class T> void constructItemValue(const std::string& key, const T& value);
+    template <class T> Status constructItemValue(const std::string& key, const T& value);
 
     /**
      * @brief  Destroy the item into the memory segment.
      *
      * @param key Key of the item.
      *
-     * @return true if destroying the item succeeded.
+     * @return eOk if destroying the item succeeded
+     * or eCannotDestroyItem if destroying the item failed.
      */
-    template <class T> bool destroyItemValue(const std::string& key);
+    template <class T> Status destroyItemValue(const std::string& key);
 
     /**
      * @brief  Update the item value into the memory segment.
      *
      * @param key Key of the item.
      * @param value Value of the item.
+     *
+     * @return eOk if updating the item succeeded
+     * or eItemNotFound if the item doesn't exists.
      */
-
-    template <class T> void updateItemValue(const std::string& key, const T& value);
+    template <class T> Status updateItemValue(const std::string& key, const T& value);
 
     /**
      * @brief  Read the  item value from the memory segment.
      *
      * @param key Key of the item.
      * @param[out] value Value of the item.
+     *
+     * @return eOk if reading the item succeeded
+     * or eItemNotFound if the item doesn't exists.
      */
-    template <class T> void readItemValue(const std::string& key, T& value);
+    template <class T> Status readItemValue(const std::string& key, T& value);
 
     std::string m_name;
     boost::interprocess::managed_shared_memory m_segment;
@@ -342,14 +368,15 @@ public:
      *
      * @param storage Storage in which destroy the item value.
      */
-    ItemDestructor(SharedStorage* storage) : m_storage(storage), m_result(false) {}
+    ItemDestructor(SharedStorage* storage) : m_storage(storage), m_status(eOk) {}
 
     /**
-     * @brief  Get the result of item value destruction.
+     * @brief  Get the status of item value destruction.
      *
-     * @return true if destroying the item value succeeded.
+     * @return eOk if destroying the item succeeded
+     * or eCannotDestroyItem if destroying the item failed.
      */
-    bool getResult() const { return m_result; }
+    Status getStatus() const { return m_status; }
 
     /**
      * @brief  Destroy the item value.
@@ -360,12 +387,12 @@ public:
      */
     template <class T> void set(const std::string& key, Item<T>& item)
     {
-        m_result = m_storage->destroyItemValue<T>(key);
+        m_status = m_storage->destroyItemValue<T>(key);
     }
 
 private:
     SharedStorage* m_storage;
-    bool m_result;
+    Status m_status;
 };
 
 
@@ -387,7 +414,11 @@ template <class T> inline Status SharedStorage::setItem(const std::string& key, 
             // new one
             ItemDestructor itemDestructor(this);
             status = getItem<ItemDestructor>(key, info->second, itemDestructor);
-            if ((status == eOk) && itemDestructor.getResult())
+            if (status == eOk)
+            {
+                status = itemDestructor.getStatus();
+            }
+            if ((status == eOk) || (status == eItemNotFound))
             {
                 (*m_itemInfoMap).erase(info);
                 constructNewValue = true;
@@ -400,8 +431,16 @@ template <class T> inline Status SharedStorage::setItem(const std::string& key, 
         else
         {
             // the value type is the same, just update the value and the tag
-            updateItemValue<T>(key, item.getValue());
-            updateItemInfo<T>(info->second, item);
+            status = updateItemValue<T>(key, item.getValue());
+            if (status == eItemNotFound)
+            {
+                (*m_itemInfoMap).erase(info);
+                constructNewValue = true;
+            }
+            else if (status == eOk)
+            {
+                updateItemInfo<T>(info->second, item);
+            }
         }
     }
     else
@@ -412,8 +451,11 @@ template <class T> inline Status SharedStorage::setItem(const std::string& key, 
 
     if (constructNewValue)
     {
-        constructItemValue<T>(key, item.getValue());
-        addItemInfo<T>(ipStrKey, item);
+        status = constructItemValue<T>(key, item.getValue());
+        if (status == eOk)
+        {
+            addItemInfo<T>(ipStrKey, item);
+        }
     }
 
     return status;
@@ -452,27 +494,36 @@ inline Status SharedStorage::getItem(const std::string& key, const ItemInfo& inf
     case eBool:
     {
         bool value = false;
-        readItemValue<bool>(key, value);
-        Item<bool> item(value, tag);
-        consumer.template set<bool>(key, item);
+        status = readItemValue<bool>(key, value);
+        if (status == eOk)
+        {
+            Item<bool> item(value, tag);
+            consumer.template set<bool>(key, item);
+        }
         break;
     }
 
     case eDouble:
     {
         double value = 0.0;
-        readItemValue<double>(key, value);
-        Item<double> item(value, tag);
-        consumer.template set<double>(key, item);
+        status = readItemValue<double>(key, value);
+        if (status == eOk)
+        {
+            Item<double> item(value, tag);
+            consumer.template set<double>(key, item);
+        }
         break;
     }
 
     case eString:
     {
         std::string value;
-        readItemValue<std::string>(key, value);
-        Item<std::string> item(value, tag);
-        consumer.template set<std::string>(key, item);
+        status = readItemValue<std::string>(key, value);
+        if (status == eOk)
+        {
+            Item<std::string> item(value, tag);
+            consumer.template set<std::string>(key, item);
+        }
         break;
     }
 
@@ -498,26 +549,53 @@ template <class T> inline void SharedStorage::updateItemInfo(ItemInfo& info, con
 }
 
 template <class T>
-inline void SharedStorage::constructItemValue(const std::string& key, const T& value)
+inline Status SharedStorage::constructItemValue(const std::string& key, const T& value)
 {
-    m_segment.construct<T>(key.c_str())(value);
+    T* obj = nullptr;
+    try
+    {
+        obj = m_segment.construct<T>(key.c_str())(value);
+    }
+    catch (const std::exception&)
+    {
+    }
+    return (obj != nullptr) ? eOk : eCannotConstructItem;
 }
 
-template <class T> inline bool SharedStorage::destroyItemValue(const std::string& key)
+template <class T> inline Status SharedStorage::destroyItemValue(const std::string& key)
 {
-    return m_segment.destroy<T>(key.c_str());
+    bool done = false;
+    try
+    {
+        done = m_segment.destroy<T>(key.c_str());
+    }
+    catch (const std::exception&)
+    {
+    }
+    return (done) ? eOk : eCannotDestroyItem;
 }
 
 template <class T>
-inline void SharedStorage::updateItemValue(const std::string& key, const T& value)
+inline Status SharedStorage::updateItemValue(const std::string& key, const T& value)
 {
     T* localValue = m_segment.find<T>(key.c_str()).first;
-    *localValue = value;
+    if (localValue != nullptr)
+    {
+        *localValue = value;
+        return eOk;
+    }
+    return eItemNotFound;
 }
 
-template <class T> void SharedStorage::readItemValue(const std::string& key, T& value)
+template <class T> Status SharedStorage::readItemValue(const std::string& key, T& value)
 {
-    value = *m_segment.find<T>(key.c_str()).first;
+    const T* localValue = m_segment.find<T>(key.c_str()).first;
+    if (localValue != nullptr)
+    {
+        value = *localValue;
+        return eOk;
+    }
+    return eItemNotFound;
 }
 
 
@@ -526,30 +604,57 @@ template <class T> void SharedStorage::readItemValue(const std::string& key, T& 
  */
 
 template <>
-inline void SharedStorage::constructItemValue<std::string>(const std::string& key,
-                                                           const std::string& value)
+inline Status SharedStorage::constructItemValue<std::string>(const std::string& key,
+                                                             const std::string& value)
 {
-    m_segment.construct<StringValue>(key.c_str())(value.c_str(), m_segment.get_segment_manager());
+    StringValue* obj = nullptr;
+    try
+    {
+        obj = m_segment.construct<StringValue>(key.c_str())(value.c_str(),
+                                                            m_segment.get_segment_manager());
+    }
+    catch (const std::exception&)
+    {
+    }
+    return (obj != nullptr) ? eOk : eCannotConstructItem;
 }
 
-template <> inline bool SharedStorage::destroyItemValue<std::string>(const std::string& key)
+template <> inline Status SharedStorage::destroyItemValue<std::string>(const std::string& key)
 {
-    return m_segment.destroy<StringValue>(key.c_str());
+    bool done = false;
+    try
+    {
+        done = m_segment.destroy<StringValue>(key.c_str());
+    }
+    catch (const std::exception&)
+    {
+    }
+    return (done) ? eOk : eCannotDestroyItem;
 }
 
 template <>
-inline void SharedStorage::updateItemValue<std::string>(const std::string& key,
-                                                        const std::string& value)
+inline Status SharedStorage::updateItemValue<std::string>(const std::string& key,
+                                                          const std::string& value)
 {
     StringValue* localValue = m_segment.find<StringValue>(key.c_str()).first;
-    localValue->assign(value.c_str());
+    if (localValue != nullptr)
+    {
+        localValue->assign(value.c_str());
+        return eOk;
+    }
+    return eItemNotFound;
 }
 
 template <>
-inline void SharedStorage::readItemValue<std::string>(const std::string& key, std::string& value)
+inline Status SharedStorage::readItemValue<std::string>(const std::string& key, std::string& value)
 {
-    StringValue* localValue = m_segment.find<StringValue>(key.c_str()).first;
-    value.assign(localValue->c_str());
+    const StringValue* localValue = m_segment.find<StringValue>(key.c_str()).first;
+    if (localValue != nullptr)
+    {
+        value.assign(localValue->c_str());
+        return eOk;
+    }
+    return eItemNotFound;
 }
 
 
