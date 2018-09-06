@@ -159,7 +159,7 @@ Status SharedStorage::clear()
     }
     else
     {
-        status = eCannotRemoveItem;
+        status = eCannotClearStorage;
     }
     return status;
 }

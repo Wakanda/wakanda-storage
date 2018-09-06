@@ -69,7 +69,8 @@ enum Status
     eCannotRemoveItem = 6,
     eCannotReplaceItem = 7,
     eCannotConstructItem = 8,
-    eCannotDestroyItem = 9
+    eCannotDestroyItem = 9,
+    eCannotClearStorage = 10
 };
 
 /**
@@ -180,7 +181,7 @@ public:
     Status destroy();
 
     /**
-     * @brief  Insert a new item into the shared storage. Can throw error.
+     * @brief  Insert a new item into the shared storage.
      *
      * @param key Key to identify the new item.
      * @param item Descriptor of the new item.
@@ -209,7 +210,7 @@ public:
     template <class C> Status getItem(const std::string& key, C& consumer);
 
     /**
-     * @brief  Remove an item from the shared storage. Can throw error.
+     * @brief  Remove an item from the shared storage.
      *
      * @param key Key of the desired item.
      *
@@ -220,10 +221,10 @@ public:
     Status removeItem(const std::string& key);
 
     /**
-     * @brief  Clear the shared storage. Can throw error.
+     * @brief  Clear the shared storage.
      *
      * @return eOk if the storage was successfully cleared
-     * or eCannotRemoveItem if removing all items failed.
+     * or eCannotClearStorage if removing all items failed.
      */
     Status clear();
 
