@@ -126,7 +126,7 @@ Status SharedStorage::removeItem(const std::string& key)
     }
     else
     {
-        eItemNotFound;
+        status = eItemNotFound;
     }
 
     return status;
