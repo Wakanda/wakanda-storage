@@ -325,6 +325,69 @@ TEST_CASE("String item can be created, read, updated and removed")
 }
 
 
+TEST_CASE("Shared storage returns valid error code")
+{
+    SECTION("Creating a shared storage that aready exist")
+    {
+        StorageSetter setter(kStorageName);
+
+        storage::Status status = storage::eOk;
+        std::unique_ptr<storage::SharedStorage> localStorage(
+            storage::SharedStorage::create(kStorageName, kSize, status));
+        CHECK(localStorage == nullptr);
+        CHECK(status == storage::eCannotCreateStorage);
+    }
+
+    SECTION("Opening a shared storage that does not exist")
+    {
+        storage::Status status = storage::eOk;
+        std::unique_ptr<storage::SharedStorage> localStorage(
+            storage::SharedStorage::open(kStorageName, status));
+        CHECK(localStorage == nullptr);
+        CHECK(status == storage::eCannotOpenStorage);
+    }
+
+    SECTION("Destroying a shared storage that does not exist")
+    {
+        storage::Status status = storage::SharedStorage::destroy(std::string("unexistant_storage"));
+        CHECK(status == storage::eCannotDestroyStorage);
+    }
+
+    SECTION("Getting and item that does not exist")
+    {
+        StorageSetter setter(kStorageName);
+
+        ItemConsumer consumer;
+        storage::Status status =
+            setter.get()->getItem<ItemConsumer>(std::string("unexistant_item"), consumer);
+        CHECK(status == storage::eItemNotFound);
+        CHECK(consumer.getType() == storage::eNone);
+    }
+
+    SECTION("Removing and item that does not exist")
+    {
+        StorageSetter setter(kStorageName);
+
+        storage::Status status = setter.get()->removeItem(std::string("unexistant_item"));
+        CHECK(status == storage::eItemNotFound);
+    }
+
+    SECTION("Creating an item with a size that is larger than storage size")
+    {
+        storage::Status status = storage::eOk;
+        std::unique_ptr<storage::SharedStorage> localStorage(
+            storage::SharedStorage::create(kStorageName, 1024, status));
+        CHECK(status == storage::eOk);
+        CHECK(localStorage != nullptr);
+        std::vector<char> buffer(4096, 'z');
+        storage::Item<std::string> item(std::string(buffer.data(), 4096), "");
+        status = localStorage.get()->setItem<std::string>("too_larger_item", item);
+        CHECK(status == storage::eCannotConstructItem);
+        CHECK(localStorage.get()->destroy() == storage::eOk);
+    }
+}
+
+
 TEST_CASE("Items can be created, read, in multi-processus environment")
 {
     SECTION("Performing concurrent read and write accesses from several processes")
