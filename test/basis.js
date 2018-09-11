@@ -546,6 +546,23 @@ describe('Wakanda Storage basis', function() {
 		
 	});
 
+	describe('#errors', function() {
+
+		it('should throw an error', function() {
+			assert.throws(function() {
+				var small_storage = Storage.create('a_small_storage', 1024);
+				var bigBuffer = Buffer.alloc(2048, 'x');
+				try {
+			    	small_storage.set('bigBuffer', bigBuffer);
+			    }
+			    catch (e) {
+					Storage.destroy('a_small_storage');
+					throw (e);
+				}
+			});
+		});
+	});
+
 	after(function() {
 		Storage.destroy('basis_storage');
 	});
