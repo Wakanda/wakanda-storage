@@ -541,7 +541,8 @@ napi_status JsSharedStorage::throw_error(napi_env env, unsigned int status,
         break;
 
     case storage::eCannotConstructItem:
-        message = "cannot set the item" + decoratedIdentifier + ". The storage may be full.";
+        message = "cannot set the item" + decoratedIdentifier +
+                  ". The item size may be larger than the storage size.";
         break;
 
     case storage::eCannotReplaceItem:
