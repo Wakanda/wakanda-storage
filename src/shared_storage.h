@@ -369,7 +369,7 @@ public:
      *
      * @param storage Storage in which destroy the item value.
      */
-    ItemDestructor(SharedStorage* storage) : m_storage(storage), m_status(eOk) {}
+    ItemDestructor(SharedStorage& storage) : m_storage(storage), m_status(eOk) {}
 
     /**
      * @brief  Get the status of item value destruction.
@@ -386,13 +386,13 @@ public:
      * @param item Item description.
      * @tparam T Value type of the item.
      */
-    template <class T> void set(const std::string& key, Item<T>& item)
+    template <class T> void set(const std::string& key, Item<T>& /*item*/)
     {
-        m_status = m_storage->destroyItemValue<T>(key);
+        m_status = m_storage.destroyItemValue<T>(key);
     }
 
 private:
-    SharedStorage* m_storage;
+    SharedStorage& m_storage;
     Status m_status;
 };
 
@@ -413,7 +413,7 @@ template <class T> inline Status SharedStorage::setItem(const std::string& key, 
         {
             // the value type is different, then destroy the value and construct a
             // new one
-            ItemDestructor itemDestructor(this);
+            ItemDestructor itemDestructor(*this);
             status = getItem<ItemDestructor>(key, info->second, itemDestructor);
             if (status == eOk)
             {

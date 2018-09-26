@@ -109,7 +109,7 @@ Status SharedStorage::removeItem(const std::string& key)
     ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
     if (info != m_itemInfoMap->end())
     {
-        ItemDestructor itemDestructor(this);
+        ItemDestructor itemDestructor(*this);
         status = getItem<ItemDestructor>(key, info->second, itemDestructor);
         if (status == eOk)
         {
@@ -141,7 +141,7 @@ Status SharedStorage::clear()
     for (ItemInfoMap::iterator iter = m_itemInfoMap->begin();
          (iter != m_itemInfoMap->end()) && (status == eOk); ++iter)
     {
-        ItemDestructor itemDestructor(this);
+        ItemDestructor itemDestructor(*this);
         status =
             getItem<ItemDestructor>(std::string(iter->first.c_str()), iter->second, itemDestructor);
         if (status == eOk)
