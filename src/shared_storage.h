@@ -490,41 +490,35 @@ inline Status SharedStorage::getItem(const std::string& key, const ItemInfo& inf
     std::string tag;
     info.getTag(tag);
 
+    auto readItem = [&](auto value) {
+        status = readItemValue<decltype(value)>(key, value);
+        if (status == eOk)
+        {
+            Item<decltype(value)> item(value, tag);
+            consumer.template set<decltype(value)>(key, item);
+        }
+    };
+
     switch (info.getType())
     {
     case eBool:
     {
         bool value = false;
-        status = readItemValue<bool>(key, value);
-        if (status == eOk)
-        {
-            Item<bool> item(value, tag);
-            consumer.template set<bool>(key, item);
-        }
+        readItem(value);
         break;
     }
 
     case eDouble:
     {
         double value = 0.0;
-        status = readItemValue<double>(key, value);
-        if (status == eOk)
-        {
-            Item<double> item(value, tag);
-            consumer.template set<double>(key, item);
-        }
+        readItem(value);
         break;
     }
 
     case eString:
     {
         std::string value;
-        status = readItemValue<std::string>(key, value);
-        if (status == eOk)
-        {
-            Item<std::string> item(value, tag);
-            consumer.template set<std::string>(key, item);
-        }
+        readItem(value);
         break;
     }
 
