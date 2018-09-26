@@ -20,7 +20,7 @@
 		"conditions": [[
 			"OS==\"mac\"", {
 				"xcode_settings": {
-					"OTHER_CPLUSPLUSFLAGS": ["-std=c++11", "-stdlib=libc++"],
+					"OTHER_CPLUSPLUSFLAGS": ["-std=c++14", "-stdlib=libc++"],
 					"OTHER_LDFLAGS": ["-stdlib=libc++"],
 					"GCC_ENABLE_CPP_EXCEPTIONS": "YES",
 					"GCC_ENABLE_CPP_RTTI": "YES"
