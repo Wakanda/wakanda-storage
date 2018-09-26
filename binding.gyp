@@ -15,8 +15,8 @@
 			"src",
 			"deps"
 		],
+		"cflags!": ["-fno-rtti", "-fno-exceptions"],
 		"cflags_cc!": ["-fno-rtti", "-fno-exceptions"],
-		"cflags_cc+": ["-frtti", "-fexceptions"],
 		"conditions": [[
 			"OS==\"mac\"", {
 				"xcode_settings": {
@@ -25,6 +25,14 @@
 					"GCC_ENABLE_CPP_EXCEPTIONS": "YES",
 					"GCC_ENABLE_CPP_RTTI": "YES"
 				}
+			}
+		],[
+			"OS==\"win\"", {
+				"msvs_settings": {
+		    		"VCCLCompilerTool": {
+		    			"ExceptionHandling": 1
+		    		}
+		  		},
 			}
 		]],
 		"defines": [
