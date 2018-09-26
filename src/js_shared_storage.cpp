@@ -22,6 +22,7 @@
 #include "js_shared_storage.h"
 #include "napi_helpers.h"
 #include "shared_storage.h"
+#include <stdio.h>
 
 
 napi_ref JsSharedStorage::m_constructor = nullptr;
@@ -133,9 +134,13 @@ napi_value JsSharedStorage::create(napi_env env, napi_callback_info info)
                     storage::Status stStatus = storage::eOk;
                     storage::SharedStorage* storage =
                         storage::SharedStorage::create(strKey, size, stStatus);
-                    if (storage != nullptr)
+                    if (stStatus == storage::eOk)
                     {
                         status = JsSharedStorage::createInstance(env, storage, &result);
+                    }
+                    else
+                    {
+                        throw_error(env, stStatus, strKey);
                     }
                 }
             }
@@ -160,9 +165,13 @@ napi_value JsSharedStorage::open(napi_env env, napi_callback_info info)
             {
                 storage::Status stStatus = storage::eOk;
                 storage::SharedStorage* storage = storage::SharedStorage::open(strKey, stStatus);
-                if (storage != nullptr)
+                if (stStatus == storage::eOk)
                 {
                     status = JsSharedStorage::createInstance(env, storage, &result);
+                }
+                else
+                {
+                    throw_error(env, stStatus, strKey);
                 }
             }
         }
@@ -220,52 +229,50 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
             {
                 storage::Status stStatus = storage::eOk;
 
-                try
+                switch (type)
                 {
-                    switch (type)
+                case napi_boolean:
+                {
+                    bool value = false;
+                    status = napi_get_value_bool(env, args[1], &value);
+                    if (status == napi_ok)
                     {
-                    case napi_boolean:
-                    {
-                        bool value = false;
-                        status = napi_get_value_bool(env, args[1], &value);
-                        if (status == napi_ok)
-                        {
-                            stStatus = storage->setItem<bool>(key, storage::Item<bool>(value, tag));
-                        }
-                        break;
+                        stStatus = storage->setItem<bool>(key, storage::Item<bool>(value, tag));
                     }
-
-                    case napi_number:
-                    {
-                        double value = 0.0;
-                        status = napi_get_value_double(env, args[1], &value);
-                        if (status == napi_ok)
-                        {
-                            stStatus =
-                                storage->setItem<double>(key, storage::Item<double>(value, tag));
-                        }
-                        break;
-                    }
-
-                    case napi_string:
-                    {
-                        std::string value;
-                        status = napi_helpers::getValueStringUTF8(env, args[1], value);
-                        if (status == napi_ok)
-                        {
-                            stStatus = storage->setItem<std::string>(
-                                key, storage::Item<std::string>(value, tag));
-                        }
-                        break;
-                    }
-
-                    default:
-                        break;
-                    }
+                    break;
                 }
-                catch (const std::exception& e)
+
+                case napi_number:
                 {
-                    napi_throw_error(env, nullptr, e.what());
+                    double value = 0.0;
+                    status = napi_get_value_double(env, args[1], &value);
+                    if (status == napi_ok)
+                    {
+                        stStatus = storage->setItem<double>(key, storage::Item<double>(value, tag));
+                    }
+                    break;
+                }
+
+                case napi_string:
+                {
+                    std::string value;
+                    status = napi_helpers::getValueStringUTF8(env, args[1], value);
+                    if (status == napi_ok)
+                    {
+                        stStatus = storage->setItem<std::string>(
+                            key, storage::Item<std::string>(value, tag));
+                    }
+                    break;
+                }
+
+                default:
+                    napi_throw_error(env, nullptr, "unsupported value type.");
+                    break;
+                }
+
+                if (stStatus != storage::eOk)
+                {
+                    throw_error(env, stStatus, key);
                 }
             }
         }
@@ -447,13 +454,10 @@ napi_value JsSharedStorage::removeItem(napi_env env, napi_callback_info info)
             status = napi_helpers::getValueStringUTF8(env, args[0], key);
             if (status == napi_ok)
             {
-                try
+                storage::Status stStatus = storage->removeItem(key);
+                if (stStatus != storage::eOk)
                 {
-                    storage->removeItem(key);
-                }
-                catch (const std::exception& e)
-                {
-                    napi_throw_error(env, nullptr, e.what());
+                    throw_error(env, stStatus, key);
                 }
             }
         }
@@ -467,13 +471,10 @@ napi_value JsSharedStorage::clear(napi_env env, napi_callback_info info)
     napi_status status = getStorage(env, info, &storage);
     if (status == napi_ok)
     {
-        try
+        storage::Status stStatus = storage->clear();
+        if (stStatus != storage::eOk)
         {
-            storage->clear();
-        }
-        catch (const std::exception& e)
-        {
-            napi_throw_error(env, nullptr, e.what());
+            throw_error(env, stStatus);
         }
     }
     return nullptr;
@@ -511,5 +512,85 @@ napi_value JsSharedStorage::tryToLock(napi_env env, napi_callback_info info)
         bool locked = storage->tryToLock();
         status = napi_get_boolean(env, locked, &result);
     }
+    return result;
+}
+
+napi_status JsSharedStorage::throw_error(napi_env env, unsigned int status)
+{
+    return throw_error(env, status, std::string());
+}
+
+napi_status JsSharedStorage::throw_error(napi_env env, unsigned int status,
+                                         const std::string& identifier)
+{
+    napi_status result = napi_ok;
+    std::string message;
+    std::string decoratedIdentifier;
+
+    if (!identifier.empty())
+    {
+        decoratedIdentifier = " \"" + identifier + "\"";
+    }
+
+    switch (status)
+    {
+    case storage::eOk:
+        break;
+
+    case storage::eCannotCreateStorage:
+        message = "cannot create the storage" + decoratedIdentifier + ". It may already exist.";
+        break;
+
+    case storage::eCannotOpenStorage:
+        message = "cannot open the storage" + decoratedIdentifier + ". It may not exist.";
+        break;
+
+    case storage::eCannotConstructItem:
+        message = "cannot set the item" + decoratedIdentifier + ". The storage may be full.";
+        break;
+
+    case storage::eCannotReplaceItem:
+        message = "cannot set the item" + decoratedIdentifier +
+                  ". An item with the same key exists and cannot be removed.";
+        break;
+
+    case storage::eCannotRemoveItem:
+        message = "cannot remove the item" + decoratedIdentifier + ".";
+        break;
+
+    case storage::eCannotClearStorage:
+        message = "cannot remove all items in the storage.";
+        break;
+
+    default:
+        result = napi_throw_error(env, nullptr, "internal storage error.");
+        break;
+    }
+
+    if (!message.empty())
+    {
+        napi_value errorMsg = nullptr;
+        napi_value errorCode = nullptr;
+        napi_value error = nullptr;
+
+        result = napi_helpers::createValueStringUTF8(message, env, &errorMsg);
+        if (result == napi_ok)
+        {
+            char buffer[16];
+            if (snprintf(buffer, 16, "%d", status) > 0)
+            {
+                result = napi_helpers::createValueStringUTF8(std::string(buffer), env, &errorCode);
+            }
+        }
+        if (result == napi_ok)
+        {
+            result = napi_create_error(env, errorCode, errorMsg, &error);
+        }
+        if (result == napi_ok)
+        {
+            result = napi_throw(env, error);
+        }
+    }
+
     return result;
 }

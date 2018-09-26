@@ -109,9 +109,13 @@ Status SharedStorage::removeItem(const std::string& key)
     ItemInfoMap::iterator info = m_itemInfoMap->find(ipStrKey);
     if (info != m_itemInfoMap->end())
     {
-        ItemDestructor itemDestructor(this);
+        ItemDestructor itemDestructor(*this);
         status = getItem<ItemDestructor>(key, info->second, itemDestructor);
-        if ((status == eOk) && itemDestructor.getResult())
+        if (status == eOk)
+        {
+            status = itemDestructor.getStatus();
+        }
+        if ((status == eOk) || (status == eItemNotFound))
         {
             (*m_itemInfoMap).erase(info);
         }
@@ -122,23 +126,42 @@ Status SharedStorage::removeItem(const std::string& key)
     }
     else
     {
-        eItemNotFound;
+        status = eItemNotFound;
     }
 
     return status;
 }
 
-void SharedStorage::clear()
+Status SharedStorage::clear()
 {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_recursive_mutex> lock(
         *m_mutex);
 
-    for (ItemInfoMap::iterator iter = m_itemInfoMap->begin(); iter != m_itemInfoMap->end(); ++iter)
+    Status status = eOk;
+    for (ItemInfoMap::iterator iter = m_itemInfoMap->begin();
+         (iter != m_itemInfoMap->end()) && (status == eOk); ++iter)
     {
-        ItemDestructor itemDestructor(this);
-        getItem<ItemDestructor>(std::string(iter->first.c_str()), iter->second, itemDestructor);
+        ItemDestructor itemDestructor(*this);
+        status =
+            getItem<ItemDestructor>(std::string(iter->first.c_str()), iter->second, itemDestructor);
+        if (status == eOk)
+        {
+            status = itemDestructor.getStatus();
+        }
+        if (status == eItemNotFound)
+        {
+            status = eOk;
+        }
     }
-    m_itemInfoMap->clear();
+    if (status == eOk)
+    {
+        m_itemInfoMap->clear();
+    }
+    else
+    {
+        status = eCannotClearStorage;
+    }
+    return status;
 }
 
 void SharedStorage::lock()

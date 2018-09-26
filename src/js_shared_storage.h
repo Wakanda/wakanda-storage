@@ -24,10 +24,11 @@
 namespace storage
 {
 class SharedStorage;
-}
+} // namespace storage
 
 // Includes.
 #include <node_api.h>
+#include <string>
 
 
 /**
@@ -199,6 +200,28 @@ public:
     static napi_value tryToLock(napi_env env, napi_callback_info info);
 
 private:
+    /**
+     * @brief  Throw JavaScript exception according to the passed status.
+     *
+     * @param env Nodejs environment handler.
+     * @param status Status for which throw the exception.
+     *
+     * @return napi_ok if throwing the exception succeeded.
+     */
+    static napi_status throw_error(napi_env env, unsigned int status);
+
+    /**
+     * @brief  Throw JavaScript exception according to the passed status.
+     *
+     * @param env Nodejs environment handler.
+     * @param status Status for which throw the exception.
+     * @param identifier String that identifies the storage or the item.
+     *
+     * @return napi_ok if throwing the exception succeeded.
+     */
+    static napi_status throw_error(napi_env env, unsigned int status,
+                                   const std::string& identifier);
+
     static napi_ref m_constructor;
 };
 
