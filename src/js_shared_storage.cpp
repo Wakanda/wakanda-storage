@@ -140,7 +140,7 @@ napi_value JsSharedStorage::create(napi_env env, napi_callback_info info)
                     }
                     else
                     {
-                        throw_error(env, stStatus, &strKey);
+                        throw_error(env, stStatus, strKey);
                     }
                 }
             }
@@ -171,7 +171,7 @@ napi_value JsSharedStorage::open(napi_env env, napi_callback_info info)
                 }
                 else
                 {
-                    throw_error(env, stStatus, &strKey);
+                    throw_error(env, stStatus, strKey);
                 }
             }
         }
@@ -272,7 +272,7 @@ napi_value JsSharedStorage::setItem(napi_env env, napi_callback_info info)
 
                 if (stStatus != storage::eOk)
                 {
-                    throw_error(env, stStatus, &key);
+                    throw_error(env, stStatus, key);
                 }
             }
         }
@@ -457,7 +457,7 @@ napi_value JsSharedStorage::removeItem(napi_env env, napi_callback_info info)
                 storage::Status stStatus = storage->removeItem(key);
                 if (stStatus != storage::eOk)
                 {
-                    throw_error(env, stStatus, &key);
+                    throw_error(env, stStatus, key);
                 }
             }
         }
@@ -474,7 +474,7 @@ napi_value JsSharedStorage::clear(napi_env env, napi_callback_info info)
         storage::Status stStatus = storage->clear();
         if (stStatus != storage::eOk)
         {
-            throw_error(env, stStatus, nullptr);
+            throw_error(env, stStatus);
         }
     }
     return nullptr;
@@ -515,16 +515,21 @@ napi_value JsSharedStorage::tryToLock(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_status JsSharedStorage::throw_error(napi_env env, unsigned int status)
+{
+    return throw_error(env, status, std::string());
+}
+
 napi_status JsSharedStorage::throw_error(napi_env env, unsigned int status,
-                                         const std::string* identifier)
+                                         const std::string& identifier)
 {
     napi_status result = napi_ok;
     std::string message;
     std::string decoratedIdentifier;
 
-    if (identifier != nullptr)
+    if (!identifier.empty())
     {
-        decoratedIdentifier = " \"" + *identifier + "\"";
+        decoratedIdentifier = " \"" + identifier + "\"";
     }
 
     switch (status)

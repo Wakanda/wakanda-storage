@@ -205,12 +205,22 @@ private:
      *
      * @param env Nodejs environment handler.
      * @param status Status for which throw the exception.
-     * @param identifier Optional string that identifies the storage or the item.
+     *
+     * @return napi_ok if throwing the exception succeeded.
+     */
+    static napi_status throw_error(napi_env env, unsigned int status);
+
+    /**
+     * @brief  Throw JavaScript exception according to the passed status.
+     *
+     * @param env Nodejs environment handler.
+     * @param status Status for which throw the exception.
+     * @param identifier String that identifies the storage or the item.
      *
      * @return napi_ok if throwing the exception succeeded.
      */
     static napi_status throw_error(napi_env env, unsigned int status,
-                                   const std::string* identifier);
+                                   const std::string& identifier);
 
     static napi_ref m_constructor;
 };
