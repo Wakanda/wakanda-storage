@@ -20,7 +20,7 @@ deploy:
  description: 'windows release version'
  provider: GitHub    
  auth_token:
-  secure: kW2dq5Hyg8WlsGniBQ7Xs9c0AM7teybE4HjQcig8Jaw4yeGvoOqkQ49wUTvmKL08
+  secure: rW3KAItK5Sju8JdPRm88jpZw45RITtwW57cjXc/dSl7nOh3qZ9xxIB+AqnKMdJg0
 # '%appveyorGithub%'
  artifact: build\Release\wakanda_storage_win32.tar.gz
  on:
