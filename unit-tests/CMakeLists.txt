@@ -17,7 +17,7 @@ macro(use_cxx14)
     endif ()
   else ()
     set (CMAKE_CXX_STANDARD 14)
-	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
   endif ()
 endmacro(use_cxx14)
 
@@ -25,6 +25,82 @@ endmacro(use_cxx14)
 use_cxx14()
 
 project (cpp-tests)
+
+set(BOOST_GIT_TAG "boost-1.66.0")
+set(CATCH2_VERSION "v2.2.3")
+
+#find git binary
+find_package(Git)
+if (NOT Git_FOUND)
+  message(FATAL_ERROR "Git not found")
+endif()
+
+
+#clone lib boost system repository
+set(BOOST_SYSTEM_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/system")
+if (NOT EXISTS "${BOOST_SYSTEM_DESTINATION}/src/error_code.cpp")
+  set(BOOST_SYSTEM_GIT_URL "https://github.com/boostorg/system.git")
+
+  message(STATUS "Cloning git repository \"${BOOST_SYSTEM_GIT_URL}\""
+          " with tag \"${BOOST_GIT_TAG}\""
+          " into directory \"${BOOST_SYSTEM_DESTINATION}\"")
+
+  file(MAKE_DIRECTORY "${BOOST_SYSTEM_DESTINATION}")
+
+  execute_process(
+    COMMAND "${GIT_EXECUTABLE}" clone --branch "${BOOST_GIT_TAG}" "${BOOST_SYSTEM_GIT_URL}" .
+    WORKING_DIRECTORY "${BOOST_SYSTEM_DESTINATION}"
+    RESULT_VARIABLE BOOST_SYSTEM_CLONE_RESULT)
+
+  if (NOT "${BOOST_SYSTEM_CLONE_RESULT}" EQUAL 0)
+    file(REMOVE_RECURSE "${BOOST_SYSTEM_DESTINATION}")
+    message(FATAL_ERROR "Failed to clone the git repository \"boost system\"")
+  endif()
+endif()
+
+
+#clone lib boost filesystem repository
+set(BOOST_FILESYSTEM_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/filesystem")
+if (NOT EXISTS "${BOOST_FILESYSTEM_DESTINATION}/src/path.cpp")
+  set(BOOST_FILESYSTEM_GIT_URL "https://github.com/boostorg/filesystem.git")
+
+  message(STATUS "Cloning git repository \"${BOOST_FILESYSTEM_GIT_URL}\""
+          " with tag \"${BOOST_GIT_TAG}\""
+          " into directory \"${BOOST_FILESYSTEM_DESTINATION}\"")
+
+  file(MAKE_DIRECTORY "${BOOST_FILESYSTEM_DESTINATION}")
+
+  execute_process(
+    COMMAND "${GIT_EXECUTABLE}" clone --branch "${BOOST_GIT_TAG}" "${BOOST_FILESYSTEM_GIT_URL}" .
+    WORKING_DIRECTORY "${BOOST_FILESYSTEM_DESTINATION}"
+    RESULT_VARIABLE BOOST_FILESYSTEM_CLONE_RESULT)
+
+  if (NOT "${BOOST_FILESYSTEM_CLONE_RESULT}" EQUAL 0)
+    file(REMOVE_RECURSE "${BOOST_FILESYSTEM_DESTINATION}")
+    message(FATAL_ERROR "Failed to clone the git repository \"boost filesystem\"")
+  endif()
+endif()
+
+
+#download catch2 header
+set(CATCH2_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/catch2")
+if (NOT EXISTS "${CATCH2_DESTINATION}/catch.hpp")
+  set(CATCH2_HEADER_URL "https://github.com/catchorg/Catch2/releases/download/${CATCH2_VERSION}/catch.hpp")
+
+  message(STATUS "Download catch2 header from github \"${CATCH2_HEADER_URL}\""
+          " to directory ${CATCH2_DESTINATION}")
+
+  FILE(DOWNLOAD "${CATCH2_HEADER_URL}" "${CATCH2_DESTINATION}/catch.hpp"
+      STATUS CATCH2_DOWNLOAD_STATUS)
+
+  list(GET CATCH2_DOWNLOAD_STATUS 0 CATCH2_DOWNLOAD_RESULT)
+
+  if (NOT "${CATCH2_DOWNLOAD_RESULT}" EQUAL 0)
+    file(REMOVE_RECURSE "${CATCH2_DESTINATION}")
+    message(FATAL_ERROR "Failed to download catch header")
+  endif()
+endif()
+
 
 #create target for lib boost system
 file(GLOB_RECURSE boost_system_src
