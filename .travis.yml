@@ -25,7 +25,8 @@ before_install:
  - echo $ARCHITECTURE
  - echo $TRAVIS_OS_NAME
 script:
- - npm run build
+ - npm run pre-build
+ - npm install --build-from-source
  - npm test
  - npm run unit-tests
  - mkdir $TRAVIS_BUILD_DIR/build/Release/bin

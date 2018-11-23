@@ -14,7 +14,6 @@
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "pre-build": "cd ./tools && sh pre-build.sh",
-    "build": "npm run pre-build && node-pre-gyp install --build-from-source",
     "test": "mocha",
     "unit-tests": "npm run pre-build && cmake-js compile -d unit-tests -T cpp-tests -s c++14 && node unit-tests/launch.js"
   },
