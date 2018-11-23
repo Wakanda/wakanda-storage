@@ -26,99 +26,25 @@ use_cxx14()
 
 project (cpp-tests)
 
-set(BOOST_GIT_TAG "boost-1.66.0")
-set(CATCH2_VERSION "v2.2.3")
-
-#find git binary
-find_package(Git)
-if (NOT Git_FOUND)
-  message(FATAL_ERROR "Git not found")
-endif()
-
-
-#clone lib boost system repository
-set(BOOST_SYSTEM_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/system")
-if (NOT EXISTS "${BOOST_SYSTEM_DESTINATION}/src/error_code.cpp")
-  set(BOOST_SYSTEM_GIT_URL "https://github.com/boostorg/system.git")
-
-  message(STATUS "Cloning git repository \"${BOOST_SYSTEM_GIT_URL}\""
-          " with tag \"${BOOST_GIT_TAG}\""
-          " into directory \"${BOOST_SYSTEM_DESTINATION}\"")
-
-  file(MAKE_DIRECTORY "${BOOST_SYSTEM_DESTINATION}")
-
-  execute_process(
-    COMMAND "${GIT_EXECUTABLE}" clone --branch "${BOOST_GIT_TAG}" "${BOOST_SYSTEM_GIT_URL}" .
-    WORKING_DIRECTORY "${BOOST_SYSTEM_DESTINATION}"
-    RESULT_VARIABLE BOOST_SYSTEM_CLONE_RESULT)
-
-  if (NOT "${BOOST_SYSTEM_CLONE_RESULT}" EQUAL 0)
-    file(REMOVE_RECURSE "${BOOST_SYSTEM_DESTINATION}")
-    message(FATAL_ERROR "Failed to clone the git repository \"boost system\"")
-  endif()
-endif()
-
-
-#clone lib boost filesystem repository
-set(BOOST_FILESYSTEM_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/filesystem")
-if (NOT EXISTS "${BOOST_FILESYSTEM_DESTINATION}/src/path.cpp")
-  set(BOOST_FILESYSTEM_GIT_URL "https://github.com/boostorg/filesystem.git")
-
-  message(STATUS "Cloning git repository \"${BOOST_FILESYSTEM_GIT_URL}\""
-          " with tag \"${BOOST_GIT_TAG}\""
-          " into directory \"${BOOST_FILESYSTEM_DESTINATION}\"")
-
-  file(MAKE_DIRECTORY "${BOOST_FILESYSTEM_DESTINATION}")
-
-  execute_process(
-    COMMAND "${GIT_EXECUTABLE}" clone --branch "${BOOST_GIT_TAG}" "${BOOST_FILESYSTEM_GIT_URL}" .
-    WORKING_DIRECTORY "${BOOST_FILESYSTEM_DESTINATION}"
-    RESULT_VARIABLE BOOST_FILESYSTEM_CLONE_RESULT)
-
-  if (NOT "${BOOST_FILESYSTEM_CLONE_RESULT}" EQUAL 0)
-    file(REMOVE_RECURSE "${BOOST_FILESYSTEM_DESTINATION}")
-    message(FATAL_ERROR "Failed to clone the git repository \"boost filesystem\"")
-  endif()
-endif()
-
-
-#download catch2 header
-set(CATCH2_DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/../deps/catch2")
-if (NOT EXISTS "${CATCH2_DESTINATION}/catch.hpp")
-  set(CATCH2_HEADER_URL "https://github.com/catchorg/Catch2/releases/download/${CATCH2_VERSION}/catch.hpp")
-
-  message(STATUS "Download catch2 header from github \"${CATCH2_HEADER_URL}\""
-          " to directory ${CATCH2_DESTINATION}")
-
-  FILE(DOWNLOAD "${CATCH2_HEADER_URL}" "${CATCH2_DESTINATION}/catch.hpp"
-      STATUS CATCH2_DOWNLOAD_STATUS)
-
-  list(GET CATCH2_DOWNLOAD_STATUS 0 CATCH2_DOWNLOAD_RESULT)
-
-  if (NOT "${CATCH2_DOWNLOAD_RESULT}" EQUAL 0)
-    file(REMOVE_RECURSE "${CATCH2_DESTINATION}")
-    message(FATAL_ERROR "Failed to download catch header")
-  endif()
-endif()
-
+set(BOOST_LIBRARY_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../deps/boost")
 
 #create target for lib boost system
 file(GLOB_RECURSE boost_system_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/system/src/*.*")
+  "${BOOST_LIBRARY_DIRECTORY}/libs/system/src/*.*")
 
 add_library(boost-system STATIC ${boost_system_src})
 
 target_include_directories(boost-system PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
+  "${BOOST_LIBRARY_DIRECTORY}")
 
 #create target for lib boost filesystem
 file(GLOB_RECURSE boost_filesystem_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/filesystem/src/*.*")
+  "${BOOST_LIBRARY_DIRECTORY}/libs/filesystem/src/*.*")
 
 add_library(boost-filesystem STATIC ${boost_filesystem_src})
 
 target_include_directories(boost-filesystem PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
+  "${BOOST_LIBRARY_DIRECTORY}")
 
 target_compile_definitions(boost-filesystem PUBLIC BOOST_FILESYSTEM_NO_LIB)
 target_compile_definitions(boost-filesystem PUBLIC BOOST_SYSTEM_NO_LIB)
@@ -134,7 +60,7 @@ add_executable(cpp-tests
 
 target_include_directories(cpp-tests PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
+  "${BOOST_LIBRARY_DIRECTORY}"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deps/catch2"
 )
 
@@ -152,7 +78,7 @@ add_executable(child-process
 
 target_include_directories(child-process PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
+  "${BOOST_LIBRARY_DIRECTORY}"
 )
 
 target_compile_definitions(child-process PUBLIC BOOST_DATE_TIME_NO_LIB)
