@@ -12,5 +12,5 @@ fi
 
 #download catch2 header
 if ! test -e ./../deps/catch2/catch.hpp
-then mkdir ./../deps/catch2 && curl -Lo ./../deps/catch2/catch.hpp https://github.com/catchorg/Catch2/releases/download/v2.2.3/catch.hpp
+then mkdir ./../deps/catch2 && curl -Lo ./../deps/catch2/catch.hpp https://github.com/catchorg/Catch2/releases/download/v2.4.2/catch.hpp
 fi
