@@ -2,7 +2,7 @@
 
 #download boost library archive
 if ! test -e ./../deps/boost.tar.gz
-then mkdir ./../deps && curl -Lo ./../deps/boost.tar.gz https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz
+then mkdir ./../deps && curl -Lo ./../deps/boost.tar.gz https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.gz
 fi
 
 #extract boost library sources
