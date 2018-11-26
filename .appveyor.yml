@@ -1,6 +1,6 @@
 image: Visual Studio 2017
 environment:
- nodejs_version: "9"
+ nodejs_version: "10.13.0"
 platform: x64
 configuration: Release
 install:
