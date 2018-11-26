@@ -4,11 +4,11 @@
   "description": "Easy to use Node storage shared between all your Node processes",
   "main": "./lib/index.js",
   "dependencies": {
-    "cmake-js": "3.7.3",
+    "cmake-js": "4.0.1",
     "expect.js": "0.3.1",
     "mocha": "^5.2.0",
-    "node-gyp": "3.6.2",
-    "node-pre-gyp": "0.9.1"
+    "node-gyp": "3.8.0",
+    "node-pre-gyp": "0.12.0"
   },
   "devDependencies": {},
   "scripts": {
