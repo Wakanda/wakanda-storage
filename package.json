@@ -4,17 +4,18 @@
   "description": "Easy to use Node storage shared between all your Node processes",
   "main": "./lib/index.js",
   "dependencies": {
-    "cmake-js": "3.7.3",
+    "cmake-js": "4.0.1",
     "expect.js": "0.3.1",
     "mocha": "^5.2.0",
-    "node-gyp": "3.6.2",
-    "node-pre-gyp": "0.9.1"
+    "node-gyp": "3.8.0",
+    "node-pre-gyp": "0.12.0"
   },
   "devDependencies": {},
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
+    "pre-build": "cd ./tools && sh pre-build.sh",
     "test": "mocha",
-    "unit-tests": "cmake-js compile -d unit-tests -T cpp-tests -s c++14 && node unit-tests/launch.js"
+    "unit-tests": "npm run pre-build && cmake-js compile -d unit-tests -T cpp-tests -s c++14 && node unit-tests/launch.js"
   },
   "binary": {
     "module_name": "wakanda_storage",

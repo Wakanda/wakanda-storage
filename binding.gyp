@@ -13,7 +13,7 @@
 		
 		"include_dirs": [
 			"src",
-			"deps"
+			"deps/boost"
 		],
 		"cflags!": ["-fno-rtti", "-fno-exceptions"],
 		"cflags_cc!": ["-fno-rtti", "-fno-exceptions"],

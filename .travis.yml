@@ -2,7 +2,7 @@ language: node_js
 compiler:
   - clang
 node_js:
- - node
+ - "10.13.0"
 os : 
  - linux
  - osx
@@ -25,6 +25,7 @@ before_install:
  - echo $ARCHITECTURE
  - echo $TRAVIS_OS_NAME
 script:
+ - npm run pre-build
  - npm install --build-from-source
  - npm test
  - npm run unit-tests

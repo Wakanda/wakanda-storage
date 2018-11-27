@@ -116,6 +116,12 @@ movies.tryLock();
 
 Once the repository is cloned, the addon is ready to be built and tested.
 
+To download the required dependencies, run first:
+
+```
+npm run pre-build
+```
+
 To build the addon, run:
 
 ```

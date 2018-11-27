@@ -17,7 +17,7 @@ macro(use_cxx14)
     endif ()
   else ()
     set (CMAKE_CXX_STANDARD 14)
-	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
   endif ()
 endmacro(use_cxx14)
 
@@ -26,23 +26,25 @@ use_cxx14()
 
 project (cpp-tests)
 
+set(BOOST_LIBRARY_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../deps/boost")
+
 #create target for lib boost system
 file(GLOB_RECURSE boost_system_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/system/src/*.*")
+  "${BOOST_LIBRARY_DIRECTORY}/libs/system/src/*.*")
 
 add_library(boost-system STATIC ${boost_system_src})
 
 target_include_directories(boost-system PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
+  "${BOOST_LIBRARY_DIRECTORY}")
 
 #create target for lib boost filesystem
 file(GLOB_RECURSE boost_filesystem_src
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps/libs/boost/filesystem/src/*.*")
+  "${BOOST_LIBRARY_DIRECTORY}/libs/filesystem/src/*.*")
 
 add_library(boost-filesystem STATIC ${boost_filesystem_src})
 
 target_include_directories(boost-filesystem PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps")
+  "${BOOST_LIBRARY_DIRECTORY}")
 
 target_compile_definitions(boost-filesystem PUBLIC BOOST_FILESYSTEM_NO_LIB)
 target_compile_definitions(boost-filesystem PUBLIC BOOST_SYSTEM_NO_LIB)
@@ -58,7 +60,7 @@ add_executable(cpp-tests
 
 target_include_directories(cpp-tests PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
+  "${BOOST_LIBRARY_DIRECTORY}"
   "${CMAKE_CURRENT_SOURCE_DIR}/../deps/catch2"
 )
 
@@ -76,7 +78,7 @@ add_executable(child-process
 
 target_include_directories(child-process PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/../src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../deps"
+  "${BOOST_LIBRARY_DIRECTORY}"
 )
 
 target_compile_definitions(child-process PUBLIC BOOST_DATE_TIME_NO_LIB)

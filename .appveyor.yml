@@ -1,11 +1,12 @@
 image: Visual Studio 2017
 environment:
- nodejs_version: "9"
+ nodejs_version: "10.13.0"
 platform: x64
 configuration: Release
 install:
  - ps: Install-Product node $env:nodejs_version $env:platform
 build_script:
+ - npm run pre-build
  - npm install --build-from-source
  - copy %APPVEYOR_BUILD_FOLDER%\build\Release\wakanda_storage.node %APPVEYOR_BUILD_FOLDER%\bin
  - 7z a -ttar %APPVEYOR_BUILD_FOLDER%\build\Release\tmp.tar %APPVEYOR_BUILD_FOLDER%\bin
