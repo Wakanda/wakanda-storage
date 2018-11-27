@@ -1,7 +1,7 @@
 {
   "name": "wakanda-storage",
-  "version": "0.0.10",
-  "description": "Easy to use Node storage shared between all your Node processes",
+  "version": "0.1.2",
+  "description": "Share your datas between all your NodeJS processes or clusters",
   "main": "./lib/index.js",
   "dependencies": {
     "cmake-js": "4.0.1",
@@ -30,7 +30,10 @@
   },
   "keywords": [
     "storage",
-    "shared storage"
+    "shared storage",
+    "worker",
+    "cluster",
+    "interprocess"
   ],
   "author": "Wakanda <social@wakanda.io> (https://github.com/Wakanda/wakanda-storage)",
   "license": "MIT",
